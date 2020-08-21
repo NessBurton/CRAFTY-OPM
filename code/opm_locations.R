@@ -2,10 +2,14 @@
 library(tidyverse)
 library(ggplot2)
 
-setwd("~/FPPH_Defra-OPM/defra-opm-R")
+setwd("~/R/CRAFTY-OPM/")
 
-sites <- read.csv("opm_sites.csv",na.strings = "NA")
-trees <- read.csv("opm_trees.csv")
+# both datasets opm_sites and opm_trees come from the raw dataset
+# opm_sites-locations_FRExport_20200629.xlsx in data-raw
+# exported separate tabs as csv files
+
+sites <- read.csv("data-processed/opm_sites.csv",na.strings = "NA")
+trees <- read.csv("data-processed/opm_trees.csv")
 
 str(sites) ; colnames(sites)[1]<-"siteID"
 str(trees) ; colnames(trees)[1]<-"treeID"
