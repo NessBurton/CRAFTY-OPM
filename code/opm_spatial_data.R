@@ -44,6 +44,17 @@ write.csv(gspace_summary,"./data-processed/AOI_greenspace_area_summaries.csv")
 tm_shape(gspace) +
   tm_polygons("priFunc")
 
+#####
+# GiGL biodiversity dataset
+
+bio <- st_read("./spatial-data/GiGL_BHP_SHP/GiGL_BHP_1km_buffer.shp")
+head(bio)
+unique(bio$BHP_Score)
+
+tm_shape(bio)+
+  tm_polygons("BHP_Score")
+
+#####
 # example code for plotting - maybe useful later
 ggplot() +
   geom_sf(data = lscape, aes(fill = biodiversity)) +
