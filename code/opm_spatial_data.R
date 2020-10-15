@@ -38,6 +38,7 @@ gspace_summary <- gspace_summary %>%
 # 2.3% playing field
 # 2.1% cemetery
 write.csv(gspace_summary,"./data-processed/AOI_greenspace_area_summaries.csv")
+gspace_summary <- read.csv("./data-processed/AOI_greenspace_area_summaries.csv")
 
 #plot(gspace["priFunc"], key.pos = 4)
 
