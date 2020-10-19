@@ -251,15 +251,15 @@ for (i in c(1:nrows)) {
     type[i] <- "Public.park"
   }
   
-  if (dfHex$School[i]>0.4){
+  if (dfHex$School[i]>0.2){
     type[i] <- "School.grounds"
   }
   
-  if (dfHex$Religious[i]>0.4){
+  if (dfHex$Religious[i]>0.2){
     type[i] <- "Religious.grounds"
   }
   
-  if (dfHex$Institutional[i]>0.4){
+  if (dfHex$Institutional[i]>0.2){
     type[i] <- "Institutional.grounds"
   }
   
