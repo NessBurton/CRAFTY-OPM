@@ -3,3 +3,11 @@
 .RData
 .Ruserdata
 data-raw/
+data-processed/hexGrids/
+data-processed/hexClusters/
+data-processed/*.tif
+data-processed/*.tfw
+data-processed/*.xml
+data-processed/*.ovr
+data-processed/*.cpg
+data-processed/*.dbf
