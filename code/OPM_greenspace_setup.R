@@ -423,18 +423,43 @@ for (i in cluster){
 }
 
 
-# read in rasters
-rastAllot <- raster(paste0(dirOut, "/hexClusters/clustAllotments.tif"))
+# hex points and grid
+hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
+hexGrid <- st_read(paste0(dirOut,"/hexGrids/hexGrid40m.shp"))
 
-# set crs
-crs(rastAllot)
-rastAOI <- raster(paste0(dirOut, "/rstGspace.tif"))
-crs(rastAOI)
-crs(rastAllot) <- crs(rastAOI)
 
 # to extract values, need to use sp points
+hexPointsSP <- as_Spatial(hexPoints)
 
-spPoints <- as_Spatial(hex_points)
-test <- extract(rstAllot,
-                spPoints,
-                method = "simple")
+nrows <- nrow(hexGrid)
+
+# empty dataframe for values
+df <- data.frame(School.grounds = rep(NA, nrows),
+                 Religious.grounds = rep(NA, nrows), 
+                 Institutional.grounds = rep(NA, nrows), 
+                 Play.space = rep(NA, nrows), 
+                 Other.sports = rep(NA, nrows),
+                 Tennis.court = rep(NA, nrows),
+                 Bowling.green = rep(NA, nrows),
+                 Playing.field = rep(NA, nrows), 
+                 Public.park = rep(NA, nrows),
+                 Cemetery = rep(NA, nrows), 
+                 Allotments = rep(NA, nrows))
+
+# read in rasters which show group id and extract values
+for (i in cluster){
+  
+  #i <- "Allotments"
+  
+  x <- raster(paste0(dirOut, "/hexClusters/clust",i,".tif"))
+  
+  value <- extract(x, hexPointsSP)
+  
+  df[,i] <- value
+  
+}
+
+summary(df)
+
+
+
