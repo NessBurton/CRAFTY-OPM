@@ -5,6 +5,7 @@
 data-raw/
 data-processed/hexGrids/
 data-processed/hexClusters/
+data-processed/capitals/
 data-processed/*.tif
 data-processed/*.tfw
 data-processed/*.xml
