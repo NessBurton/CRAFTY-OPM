@@ -460,6 +460,43 @@ for (i in cluster){
 }
 
 summary(df)
+df$ownerID <- NA
 
+df$ownerID[which(!is.na(df$School.grounds))] <- paste0("schl-",df$School.grounds[which(!is.na(df$School.grounds))])
+df$ownerID[which(!is.na(df$Religious.grounds))] <- paste0("rlgs-",df$Religious.grounds[which(!is.na(df$Religious.grounds))])
+df$ownerID[which(!is.na(df$Institutional.grounds))] <- paste0("inst-",df$Institutional.grounds[which(!is.na(df$Institutional.grounds))])
+df$ownerID[which(!is.na(df$Play.space))] <- paste0("plysp-",df$Play.space[which(!is.na(df$Play.space))])
+df$ownerID[which(!is.na(df$Other.sports))] <- paste0("othsp-",df$Other.sports[which(!is.na(df$Other.sports))])
+df$ownerID[which(!is.na(df$Tennis.court))] <- paste0("ten-",df$Tennis.court[which(!is.na(df$Tennis.court))])
+df$ownerID[which(!is.na(df$Bowling.green))] <- paste0("bwl-",df$Bowling.green[which(!is.na(df$Bowling.green))])
+df$ownerID[which(!is.na(df$Playing.field))] <- paste0("plyfd-",df$Playing.field[which(!is.na(df$Playing.field))])
+df$ownerID[which(!is.na(df$Public.park))] <- paste0("park-",df$Public.park[which(!is.na(df$Public.park))])
+df$ownerID[which(!is.na(df$Cemetery))] <- paste0("cmtry-",df$Cemetery[which(!is.na(df$Cemetery))])
+df$ownerID[which(!is.na(df$Allotments))] <- paste0("altmt-",df$Allotments[which(!is.na(df$Allotments))])
 
+# join owner ids to points
+hexP_owners <- cbind(hexPointsSP,df$ownerID)
+colnames(hexP_owners@data)[2] <- "ownerID"
 
+# merge with hexagons by joinID
+hexGrid <- as.data.frame(hexGrid)
+hexGrid <- merge(hexGrid, hexP_owners, by="joinID")
+hexGrid$coords.x1<-NULL # remove point geometry
+hexGrid$coords.x2<-NULL # remove point geometry
+
+# where owner ID still NA, give unique hex id
+hexGrid$ownerID[which(is.na(hexGrid$ownerID))] <- paste0("hex-",hexGrid$joinID[which(is.na(hexGrid$ownerID))])
+
+# check no NAs
+summary(is.na(hexGrid$ownerID))
+
+# back to SF
+hexGrid <- st_as_sf(hexGrid)
+
+st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs.shp"))
+
+# check
+parks <- filter(hexGrid, grepl("park", ownerID))
+cmtry <- filter(hexGrid, grepl("cmtry", ownerID))
+ggplot() +
+  geom_sf(cmtry, mapping = aes(fill = ownerID), col = NA)
