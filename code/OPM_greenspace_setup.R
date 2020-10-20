@@ -246,9 +246,9 @@ for (i in c(1:nrows)) {
   }
   
   # now private gardens
-  if (dfHex$Garden[i]>=0.4){ # this underestimates overall area of private gardens, but
-    type[i]<- "Private.garden" # is probably better at estimating number of households, and
-  }                           # picking up areas of road between private gardens
+  if (dfHex$Garden[i]>=0.35){ # 0.4 underestimated overall area of private gardens, 0.3 gives more accurate proportions compared to gspace figs
+    type[i]<- "Private.garden" 
+  }                           
   
     # parks
   if (dfHex$PublicPark[i]>=0.45){
@@ -302,12 +302,12 @@ for (i in c(1:nrows)) {
   if(type[i] == "NA") {
     
     # catch smaller garden areas
-    if (dfHex$Garden[i] >= 0.3){
-      type[i] <- "Private.garden"
-    }
+    #if (dfHex$Garden[i] >= 0.3){
+      #type[i] <- "Private.garden"
+    #}
     
     # now assign urban with high threshold first
-    if (dfHex$`Non-greenspace`[i]>=0.7){
+    if (dfHex$`Non-greenspace`[i]>=0.5){
       type[i] <- "Non.greenspace"
     }
     
@@ -346,8 +346,10 @@ type_summary <- dfHex %>%
   summarise(area=sum(area)) %>% 
   mutate(proportion = area/tot*100)
 
-# underestimating private gardens and overestimating public parks, but broadly representative of the landscape
+# might overestimate number of individual private gardens but proportions are good - broadly representative of the landscape
+# i.e. compares well to original greenspace summary, 25% (27%) public park, 39% (34%) private garden 
 # go with this
+write.csv(type_summary, "./data-processed/AOI_allocatedTypes_summaries.csv" )
 
 ggplot() +
   geom_sf(hexGspace, mapping = aes(fill = type), col = NA)+
@@ -372,7 +374,7 @@ type.pal <- c("Amenity.residential.business" = "grey",
               "NA" = "red")
 
 # write to shape
-st_write(hexGspace, paste0(dirOut, "/hexGrids/hexGrid40m_types.shp"), append = FALSE) # append false overwrites layer
+st_write(hexGspace, paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"), append = FALSE) # append false overwrites layer
 
 #####
 # generate cluster IDs
@@ -493,7 +495,7 @@ summary(is.na(hexGrid$ownerID))
 # back to SF
 hexGrid <- st_as_sf(hexGrid)
 
-st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs.shp"))
+st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs.shp"), append=F)
 
 # check
 parks <- filter(hexGrid, grepl("park", ownerID))
