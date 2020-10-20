@@ -8,6 +8,7 @@ library(tidyverse)
 library(sf)
 library(tmap)
 library(rgeos)
+library(raster)
 library(units)
 library(tictoc) # for timing
 
@@ -150,69 +151,72 @@ plot(hex_points, col = "black", pch = 20, cex = 0.5, add = T)
 plot(hex_grid, border = "orange", add = T)
 
 # convert hex back to sf and write shapefile
-hex_grid <- st_as_sf(hex_grid)
-st_write(hex_grid, paste0(dirData,"/hexGrid40m.shp"))
-hex_points <- st_as_sf()
+#hex_grid <- st_as_sf(hex_grid)
+#st_write(hex_grid, paste0(dirOut,"/hexGrids/hexGrid40m.shp"), append=F)
+#hex_points <- st_as_sf(hex_points)
+#st_write(hex_points, paste0(dirOut,"/hexGrids/hexPoints40m.shp"), append = F)
+
+# commented out so i don't overwrite
 
 # read in from arc
 # (in arc, used Zonal Statistics to table to calculate majority raster value in each hex)
 
-hexGspace <- st_read(paste0(dirOut, "/hexGrids/hex30_gspaceMaj.shp"))
-head(hexGspace)
+#hexGspace <- st_read(paste0(dirOut, "/hexGrids/hex30_gspaceMaj.shp"))
+#head(hexGspace)
 
 # new type field
-hexGspace$type<-NA
-hexGspace$type[which(hexGspace$MAJORITY==18)] <- "Non-greenspace"
-hexGspace$type[which(hexGspace$MAJORITY==1)] <- "Natural"
-hexGspace$type[which(hexGspace$MAJORITY==2)] <- "Private garden"
-hexGspace$type[which(hexGspace$MAJORITY==3)] <- "Amenity - residential or business"
-hexGspace$type[which(hexGspace$MAJORITY==4)] <- "School"
-hexGspace$type[which(hexGspace$MAJORITY==5)] <- "Religious grounds"
-hexGspace$type[which(hexGspace$MAJORITY==6)] <- "Amenity - transport"
-hexGspace$type[which(hexGspace$MAJORITY==7)] <- "Institutional grounds"
-hexGspace$type[which(hexGspace$MAJORITY==8)] <- "Land use changing"
-hexGspace$type[which(hexGspace$MAJORITY==9)] <- "Play space"
-hexGspace$type[which(hexGspace$MAJORITY==10)] <- "Other sports facility"
-hexGspace$type[which(hexGspace$MAJORITY==11)] <- "Playing field"
-hexGspace$type[which(hexGspace$MAJORITY==12)] <- "Public park or garden"
-hexGspace$type[which(hexGspace$MAJORITY==13)] <- "Tennis court"
-hexGspace$type[which(hexGspace$MAJORITY==14)] <- "Cemetery"
-hexGspace$type[which(hexGspace$MAJORITY==15)] <- "Allotments"
-hexGspace$type[which(hexGspace$MAJORITY==16)] <- "Bowling green"
-hexGspace$type[which(hexGspace$MAJORITY==17)] <- "Golf course"
+#hexGspace$type<-NA
+#hexGspace$type[which(hexGspace$MAJORITY==18)] <- "Non-greenspace"
+#hexGspace$type[which(hexGspace$MAJORITY==1)] <- "Natural"
+#hexGspace$type[which(hexGspace$MAJORITY==2)] <- "Private garden"
+#hexGspace$type[which(hexGspace$MAJORITY==3)] <- "Amenity - residential or business"
+#hexGspace$type[which(hexGspace$MAJORITY==4)] <- "School"
+#hexGspace$type[which(hexGspace$MAJORITY==5)] <- "Religious grounds"
+#hexGspace$type[which(hexGspace$MAJORITY==6)] <- "Amenity - transport"
+#hexGspace$type[which(hexGspace$MAJORITY==7)] <- "Institutional grounds"
+#hexGspace$type[which(hexGspace$MAJORITY==8)] <- "Land use changing"
+#hexGspace$type[which(hexGspace$MAJORITY==9)] <- "Play space"
+#hexGspace$type[which(hexGspace$MAJORITY==10)] <- "Other sports facility"
+#hexGspace$type[which(hexGspace$MAJORITY==11)] <- "Playing field"
+#hexGspace$type[which(hexGspace$MAJORITY==12)] <- "Public park or garden"
+#hexGspace$type[which(hexGspace$MAJORITY==13)] <- "Tennis court"
+#hexGspace$type[which(hexGspace$MAJORITY==14)] <- "Cemetery"
+#hexGspace$type[which(hexGspace$MAJORITY==15)] <- "Allotments"
+#hexGspace$type[which(hexGspace$MAJORITY==16)] <- "Bowling green"
+#hexGspace$type[which(hexGspace$MAJORITY==17)] <- "Golf course"
 
-plot(hexGspace, col=hexGspace$MAJORITY)
+#plot(hexGspace, col=hexGspace$MAJORITY)
 
 # load shp with tabulated areas
-hexGspace <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m.shp"))
+hexGspace <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m_tab.shp"))
 head(hexGspace)
-head(hexGspace[,11:27])
-colnames(hexGspace)[11] <- "Natural"
-colnames(hexGspace)[12] <- "Garden"
-colnames(hexGspace)[13] <- "AmenityRB"
-colnames(hexGspace)[14] <- "School"
-colnames(hexGspace)[15] <- "Religious"
-colnames(hexGspace)[16] <- "AmenityT"
-colnames(hexGspace)[17] <- "Institutional"
-colnames(hexGspace)[18] <- "Changing"
-colnames(hexGspace)[19] <- "Playspace"
-colnames(hexGspace)[20] <- "OtherSports"
-colnames(hexGspace)[21] <- "PlayingField"
-colnames(hexGspace)[22] <- "PublicPark"
-colnames(hexGspace)[23] <- "Tennis"
-colnames(hexGspace)[24] <- "Cemetery"
-colnames(hexGspace)[25] <- "Allotments"
-colnames(hexGspace)[26] <- "BowlingGreen"
-colnames(hexGspace)[27] <- "Non-greenspace"
+head(hexGspace[,4:20])
+colnames(hexGspace)[4] <- "Natural"
+colnames(hexGspace)[5] <- "Garden"
+colnames(hexGspace)[6] <- "AmenityRB"
+colnames(hexGspace)[7] <- "School"
+colnames(hexGspace)[8] <- "Religious"
+colnames(hexGspace)[9] <- "AmenityT"
+colnames(hexGspace)[10] <- "Institutional"
+colnames(hexGspace)[11] <- "Changing"
+colnames(hexGspace)[12] <- "Playspace"
+colnames(hexGspace)[13] <- "OtherSports"
+colnames(hexGspace)[14] <- "PlayingField"
+colnames(hexGspace)[15] <- "PublicPark"
+colnames(hexGspace)[16] <- "Tennis"
+colnames(hexGspace)[17] <- "Cemetery"
+colnames(hexGspace)[18] <- "Allotments"
+colnames(hexGspace)[19] <- "BowlingGreen"
+colnames(hexGspace)[20] <- "Non-greenspace"
 
 
 # convert to data frame
 dfHex <- as.data.frame(hexGspace)
 # calculate total area across rows
-nrows <- 52947
+#nrows <- 52947
 nrows <- length(dfHex[,1])
 for (i in c(1:nrows)){
-  dfHex$area[i] <- sum(dfHex[i,11:27])
+  dfHex$area[i] <- sum(dfHex[i,4:20])
 }
 # function to divide each row by total area
 divideRow <- function(x){
@@ -220,7 +224,7 @@ divideRow <- function(x){
 }
 
 # apply function across all rows for specific colums
-dfHex[,11:27] <- lapply(dfHex[,11:27], FUN = divideRow)
+dfHex[,4:20] <- lapply(dfHex[,4:20], FUN = divideRow)
 
 # assign types
 
@@ -234,71 +238,76 @@ for (i in c(1:nrows)) {
   }
   
   # prioritise bits of amenity
-  if (dfHex$AmenityRB[i]>0.2){
+  if (dfHex$AmenityRB[i]>=0.2){
     type[i] <- "Amenity.residential.business"
   }
-  if (dfHex$AmenityT[i]>0.2){
+  if (dfHex$AmenityT[i]>=0.2){
     type[i] <- "Amenity.transport"
   }
   
   # now private gardens
-  if (dfHex$Garden[i]>0.35){
-    type[i]<- "Private.garden"
-  }
+  if (dfHex$Garden[i]>=0.4){ # this underestimates overall area of private gardens, but
+    type[i]<- "Private.garden" # is probably better at estimating number of households, and
+  }                           # picking up areas of road between private gardens
   
     # parks
-  if (dfHex$PublicPark[i]>0.45){
+  if (dfHex$PublicPark[i]>=0.45){
     type[i] <- "Public.park"
   }
   
-  if (dfHex$School[i]>0.2){
+  if (dfHex$School[i]>=0.2){
     type[i] <- "School.grounds"
   }
   
-  if (dfHex$Religious[i]>0.2){
+  if (dfHex$Religious[i]>=0.2){
     type[i] <- "Religious.grounds"
   }
   
-  if (dfHex$Institutional[i]>0.2){
+  if (dfHex$Institutional[i]>=0.2){
     type[i] <- "Institutional.grounds"
   }
   
-  if (dfHex$Changing[i]>0.5){
+  if (dfHex$Changing[i]>=0.5){
     type[i] <- "Non.greenspace"
   }
   
-  if (dfHex$Playspace[i]> 0.4){
+  if (dfHex$Playspace[i]>=0.4){
     type[i] <- "Play.space"
   }
   
-  if (dfHex$OtherSports[i] > 0.4){
-    type[i] <- "Sports.facility"
+  if (dfHex$OtherSports[i] >= 0.4){
+    type[i] <- "Other.sports"
   }
   
-  if (dfHex$PlayingField[i] > 0.4){
+  if (dfHex$PlayingField[i] >= 0.4){
     type[i] <- "Playing.field"
   }
   
-  if (dfHex$Tennis[i] > 0.4){
-    type[i] <- "Sports.facility"
+  if (dfHex$Tennis[i] >= 0.4){
+    type[i] <- "Tennis.court"
   }
   
-  if (dfHex$Cemetery[i] > 0.4){
+  if (dfHex$Cemetery[i] >= 0.4){
     type[i] <- "Cemetery"
   }
   
-  if (dfHex$Allotments[i] > 0.2) {
+  if (dfHex$Allotments[i] >= 0.2) {
     type[i] <- "Allotments"
   }
   
-  if(dfHex$BowlingGreen[i] > 0.2) {
-    type[i] <- "Sports.facility"
+  if(dfHex$BowlingGreen[i] >= 0.2) {
+    type[i] <- "Bowling.green"
   }
   
   if(type[i] == "NA") {
     
+    # catch smaller garden areas
+    if (dfHex$Garden[i] >= 0.3){
+      type[i] <- "Private.garden"
+    }
+    
     # now assign urban with high threshold first
-    if (dfHex$`Non-greenspace`[i]>0.7){
+    if (dfHex$`Non-greenspace`[i]>=0.7){
       type[i] <- "Non.greenspace"
     }
     
@@ -330,14 +339,14 @@ dfHex$type <- type
 # check summaries against OSMM greenspace summaries
 gspace_summary <- read.csv("./data-processed/AOI_greenspace_area_summaries.csv")
 
-tot<-sum(dfHex$AREA[which(dfHex$type!="Non.greenspace")])
+tot<-sum(dfHex$area[which(dfHex$type!="Non.greenspace")])
 type_summary <- dfHex %>% 
   group_by(type) %>% 
   filter(type != "Non.greenspace") %>% # OSMM greenspace summaries don't include non-greenspace
-  summarise(area=sum(AREA)) %>% 
+  summarise(area=sum(area)) %>% 
   mutate(proportion = area/tot*100)
 
-# slightly underestimating private gardens and overestimating public parks, but broadly representative of the landscape
+# underestimating private gardens and overestimating public parks, but broadly representative of the landscape
 # go with this
 
 ggplot() +
@@ -354,7 +363,9 @@ type.pal <- c("Amenity.residential.business" = "grey",
               "Non.greenspace" = "white",
               "Play.space" = "orange",
               "Playing.field" = "orange",
-              "Sports.facility" = "yellow",
+              "Other.sports" = "yellow",
+              "Tennis.court" = "yellow",
+              "Bowling.green" = "yellow",
               "Allotments" = "brown",
               "Cemetery" = "black",
               "Natural" = "darkgreen",
@@ -387,12 +398,12 @@ unique(hexGspace$type)
 # list of types that if polygons are within 5m of each other, are likely to be under same ownership
 # essentially everything except private gardens (and non.greenspace/natural)
 cluster <- c("School.grounds","Religious.grounds", "Institutional.grounds", 
-          "Play.space", "Sports.facility","Playing.field", "Public.park",
+          "Play.space", "Other.sports","Tennis.court","Bowling.green","Playing.field", "Public.park",
           "Cemetery", "Allotments")
 
 for (i in cluster){
   
-  #i <- "Religious.grounds"
+  #i <- "Religious.grounds" # test
   
   x <- hexGspace %>% 
     filter(type == i) %>% 
@@ -400,9 +411,30 @@ for (i in cluster){
   
   xClust <- clusterSF(x, set_units(5, "m"))
   
+  #xClust$uniqueID <- paste0(i,"-",xClust$group)
+  
+  xRast <- rasterize(x=xClust,
+                     y=raster(extent(xClust), res=1),
+                     field='group')
+  
   st_write(xClust, paste0(dirOut,"/hexClusters/hexGspace_",i,"_Clust.shp"), append=F)
+  writeRaster(xRast, file.path(paste0(dirOut, "/hexClusters/clust",i,".tif")), format="GTiff", overwrite=TRUE)
   
 }
 
-# check
-plot(xClust, col=xClust$group)
+
+# read in rasters
+rastAllot <- raster(paste0(dirOut, "/hexClusters/clustAllotments.tif"))
+
+# set crs
+crs(rastAllot)
+rastAOI <- raster(paste0(dirOut, "/rstGspace.tif"))
+crs(rastAOI)
+crs(rastAllot) <- crs(rastAOI)
+
+# to extract values, need to use sp points
+
+spPoints <- as_Spatial(hex_points)
+test <- extract(rstAllot,
+                spPoints,
+                method = "simple")
