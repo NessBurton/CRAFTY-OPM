@@ -58,6 +58,29 @@ hexSocial$riskPerc[gardens21] <- 0
 
 summary(hexSocial$riskPerc)
 
+# now gets a little trickier.
+# for other types i need to apply to ownerIDs, so can't use row indexing in the same way
+
+# parks
+# 50% neutral = 0.5, 50% agree = 0.8
+parks <- filter(hexSocial, grepl("park", ownerID))
+parkIDs <- unique(parks$ownerID)
+perc50 <- length(sample(parkIDs,(0.5*length(parkIDs)))) # 50% of parkIDs
+parkIDhalf <- sample(parkIDs,perc50,replace=F) # randomly sample
+library(Hmisc) # for %nin% (not in)
+index <- parkIDs %nin% parkIDhalf
+parkIDhalf2 <- parkIDs[index==T] # extract the other half
+# check
+summary(parkIDhalf %in% parkIDhalf2) # all false so all good
+
+#parksAll <- as.numeric(row.names(hexSocial[which(hexSocial$type == "Public.park"),]))
+
+hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf == T)] <- 0.8
+hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
+
+# example
+png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
 ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = riskPerc), col = NA)+
   scale_fill_viridis()
+dev.off()
