@@ -1,7 +1,7 @@
 
 # date: 12/10/20
 # author: VB
-# description: process OSMM greenspace data. simplify typology and merge adjacent types (parks)
+# description: process OSMM greenspace data. simplify typology and create IDs for type clusters
 
 # load libraries
 library(tidyverse)
@@ -375,6 +375,7 @@ type.pal <- c("Amenity.residential.business" = "grey",
 
 # write to shape
 st_write(hexGspace, paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"), append = FALSE) # append false overwrites layer
+hexGspace <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"))
 
 #####
 # generate cluster IDs
@@ -495,10 +496,10 @@ summary(is.na(hexGrid$ownerID))
 # back to SF
 hexGrid <- st_as_sf(hexGrid)
 
-st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs.shp"), append=F)
+st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs2.shp"), append=F)
 
 # check
 parks <- filter(hexGrid, grepl("park", ownerID))
 cmtry <- filter(hexGrid, grepl("cmtry", ownerID))
 ggplot() +
-  geom_sf(cmtry, mapping = aes(fill = ownerID), col = NA)
+  geom_sf(parks, mapping = aes(fill = ownerID), col = NA)
