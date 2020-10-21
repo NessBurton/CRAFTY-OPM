@@ -65,3 +65,20 @@ hist(normalised)
 hexGrid$nature <- normalised
 
 st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
+
+hexGrid <- st_read(paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
+
+library(viridis)
+
+png(paste0(wd,"/figures/nature_capital.png"), width = 800, height = 800)
+ggplot() +
+  geom_sf(hexGrid, mapping = aes(fill = nature), col = NA)+
+  scale_fill_viridis()
+dev.off()
+
+png(paste0(wd,"/figures/access_capital.png"), width = 800, height = 800)
+ggplot() +
+  geom_sf(hexGrid, mapping = aes(fill = access), col = NA)+
+  scale_fill_viridis()
+dev.off()
+
