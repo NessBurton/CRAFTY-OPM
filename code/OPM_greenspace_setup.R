@@ -350,28 +350,34 @@ type_summary <- dfHex %>%
 # i.e. compares well to original greenspace summary, 25% (27%) public park, 39% (34%) private garden 
 # go with this
 write.csv(type_summary, "./data-processed/AOI_allocatedTypes_summaries.csv" )
-
-ggplot() +
-  geom_sf(hexGspace, mapping = aes(fill = type), col = NA)+
-  scale_fill_manual(values=type.pal)
+type_summary <- read.csv("./data-processed/AOI_allocatedTypes_summaries.csv")
+type_summary <- type_summary[with(type_summary, order(-area)),]
+order <- type_summary$type
+hexGspace$type <- factor(hexGspace$type, levels = c(order,"Non-greenspace"))
 
 type.pal <- c("Amenity.residential.business" = "grey",
               "Amenity.transport" = "darkgrey",
-              "Private.garden" = "hotpink",
-              "Public.park" = "green",
-              "School.grounds" = "blue",
-              "Religious.grounds" = "blue",
-              "Institutional.grounds" = "blue",
+              "Private.garden" = "#483D8B",
+              "Public.park" = "#008000",
+              "School.grounds" = "#2F4F4F",
+              "Religious.grounds" = "#2F4F4F",
+              "Institutional.grounds" = "#2F4F4F",
               "Non.greenspace" = "white",
-              "Play.space" = "orange",
-              "Playing.field" = "orange",
-              "Other.sports" = "yellow",
-              "Tennis.court" = "yellow",
-              "Bowling.green" = "yellow",
-              "Allotments" = "brown",
-              "Cemetery" = "black",
-              "Natural" = "darkgreen",
+              "Play.space" = "#008080",
+              "Playing.field" = "#008080",
+              "Other.sports" = "#00FA9A",
+              "Tennis.court" = "#00FA9A",
+              "Bowling.green" = "#00FA9A",
+              "Allotments" = "#B8860B",
+              "Cemetery" = "#696969",
+              "Natural" = "white",
               "NA" = "red")
+
+png(paste0(wd,"/figures/type_allocation.png"), width = 800, height = 800)
+ggplot() +
+  geom_sf(hexGspace, mapping = aes(fill = type), col = NA)+
+  scale_fill_manual(values=type.pal)
+dev.off()
 
 # write to shape
 st_write(hexGspace, paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"), append = FALSE) # append false overwrites layer
