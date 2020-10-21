@@ -507,5 +507,9 @@ st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs2.shp"), append=F)
 # check
 parks <- filter(hexGrid, grepl("park", ownerID))
 cmtry <- filter(hexGrid, grepl("cmtry", ownerID))
+plyf <- filter(hexGrid, grepl("plyfd", ownerID))
+
+png(paste0(wd,"/figures/clusterID_example.png"), width = 800, height = 600)
 ggplot() +
-  geom_sf(parks, mapping = aes(fill = ownerID), col = NA)
+  geom_sf(cmtry, mapping = aes(fill = ownerID), col = NA)
+dev.off()
