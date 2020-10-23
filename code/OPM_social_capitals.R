@@ -24,6 +24,23 @@ hexSocial <- merge(hexType,hexOwner,by="joinID")
 hexSocial <- st_as_sf(hexSocial)
 
 # check
+type.pal <- c("Amenity.residential.business" = "grey",
+              "Amenity.transport" = "darkgrey",
+              "Private.garden" = "#483D8B",
+              "Public.park" = "#008000",
+              "School.grounds" = "#2F4F4F",
+              "Religious.grounds" = "#2F4F4F",
+              "Institutional.grounds" = "#2F4F4F",
+              "Non.greenspace" = "white",
+              "Play.space" = "#008080",
+              "Playing.field" = "#008080",
+              "Other.sports" = "#00FA9A",
+              "Tennis.court" = "#00FA9A",
+              "Bowling.green" = "#00FA9A",
+              "Allotments" = "#B8860B",
+              "Cemetery" = "#696969",
+              "Natural" = "white",
+              "NA" = "red")
 ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = type), col = NA)+
   scale_fill_manual(values=type.pal)
@@ -79,8 +96,9 @@ hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf == T)] <- 0.8
 hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
 
 # example
-png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
+#png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
+library(viridis)
 ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = riskPerc), col = NA)+
   scale_fill_viridis()
-dev.off()
+#dev.off()
