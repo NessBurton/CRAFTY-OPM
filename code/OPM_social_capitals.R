@@ -95,6 +95,11 @@ summary(parkIDhalf %in% parkIDhalf2) # all false so all good
 hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf == T)] <- 0.8
 hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
 
+
+# all other types, by cluster ID
+others <- filter(hexSocial, grepl("schl|rlgs|inst|plysp|plyfd|othsp|ten|bwl|cmtry|altmt", ownerID)) 
+
+
 # example
 #png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
 library(viridis)
