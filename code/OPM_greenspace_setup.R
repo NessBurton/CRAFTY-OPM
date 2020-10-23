@@ -408,7 +408,7 @@ unique(hexGspace$type)
 # essentially everything except private gardens (and non.greenspace/natural)
 cluster <- c("School.grounds","Religious.grounds", "Institutional.grounds", 
           "Play.space", "Other.sports","Tennis.court","Bowling.green","Playing.field", "Public.park",
-          "Cemetery", "Allotments")
+          "Cemetery", "Allotments", "Amenity.residential.business", "Amenity.transport")
 
 for (i in cluster){
   
@@ -453,7 +453,9 @@ df <- data.frame(School.grounds = rep(NA, nrows),
                  Playing.field = rep(NA, nrows), 
                  Public.park = rep(NA, nrows),
                  Cemetery = rep(NA, nrows), 
-                 Allotments = rep(NA, nrows))
+                 Allotments = rep(NA, nrows),
+                 Amenity.residential.business = rep(NA,nrows),
+                 Amenity.transport = rep(NA,nrows))
 
 # read in rasters which show group id and extract values
 for (i in cluster){
@@ -482,6 +484,9 @@ df$ownerID[which(!is.na(df$Playing.field))] <- paste0("plyfd-",df$Playing.field[
 df$ownerID[which(!is.na(df$Public.park))] <- paste0("park-",df$Public.park[which(!is.na(df$Public.park))])
 df$ownerID[which(!is.na(df$Cemetery))] <- paste0("cmtry-",df$Cemetery[which(!is.na(df$Cemetery))])
 df$ownerID[which(!is.na(df$Allotments))] <- paste0("altmt-",df$Allotments[which(!is.na(df$Allotments))])
+df$ownerID[which(!is.na(df$Amenity.residential.business))] <- paste0("amnrb-",df$Amenity.residential.business[which(!is.na(df$Amenity.residential.business))])
+df$ownerID[which(!is.na(df$Amenity.transport))] <- paste0("amnt-",df$Amenity.transport[which(!is.na(df$Amenity.transport))])
+
 
 # join owner ids to points
 hexP_owners <- cbind(hexPointsSP,df$ownerID)
