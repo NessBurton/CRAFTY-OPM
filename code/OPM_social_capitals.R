@@ -54,26 +54,31 @@ hexSocial$riskPerc <- NA
 # 9% neutral - value = 0.5
 # 21%  disagree, strongly disagree or don't know - value = 0
 gardensAll <- as.numeric(row.names(hexSocial[which(hexSocial$type == "Private.garden"),]))
+# random sample 16%                       
 perc16 <- length(sample(gardensAll,(0.16*length(gardensAll))))
-perc54 <- length(sample(gardensAll,(0.54*length(gardensAll))))
-perc9 <- length(sample(gardensAll,(0.09*length(gardensAll))))
-perc21 <- length(sample(gardensAll,(0.21*length(gardensAll))))
-# random sample 16%
 gardens16 <- sample(gardensAll,perc16,replace = F)
 hexSocial$riskPerc[gardens16] <- 1
 # random sample 54% from gardens not already sampled
 gardens84 <- as.numeric(row.names(hexSocial[which(hexSocial$type=="Private.garden" & is.na(hexSocial$riskPerc)),]))
+perc54 <- length(sample(gardens84,(0.54*length(gardensAll))))
 gardens54 <- sample(gardens84,perc54,replace = F)
 hexSocial$riskPerc[gardens54] <- 0.8
 # random sample 9% from gardens not already sampled
 gardens30 <- as.numeric(row.names(hexSocial[which(hexSocial$type=="Private.garden" & is.na(hexSocial$riskPerc)),]))
+perc9 <- length(sample(gardens30,(0.09*length(gardensAll))))
 gardens9 <- sample(gardens30,perc9,replace = F)
 hexSocial$riskPerc[gardens9] <- 0.5
 # final 21%
 gardens21 <- as.numeric(row.names(hexSocial[which(hexSocial$type=="Private.garden" & is.na(hexSocial$riskPerc)),]))
+perc21 <- length(sample(gardens21,(0.21*length(gardensAll))))
 hexSocial$riskPerc[gardens21] <- 0
 
 summary(hexSocial$riskPerc)
+#check
+length(hexSocial$riskPerc[which(hexSocial$riskPerc==0.8)])/length(gardensAll)*100 # 54%
+length(hexSocial$riskPerc[which(hexSocial$riskPerc==0.5)])/length(gardensAll)*100 # 9%
+length(hexSocial$riskPerc[which(hexSocial$riskPerc==0)])/length(gardensAll)*100 #21%
+# all good
 
 # now gets a little trickier.
 # for other types i need to apply to ownerIDs, so can't use row indexing in the same way
@@ -103,7 +108,34 @@ hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
 # 18% strongly disagree - value 0
 others <- filter(hexSocial, grepl("schl|rlgs|inst|plysp|plyfd|othsp|ten|bwl|cmtry|altmt|amnrb|amnt", ownerID)) 
 otherIDs <- unique(others$ownerID)
-
+others30 <- sample(otherIDs,(0.3*length(otherIDs)),replace = F)
+# check
+length(others30)/length(otherIDs)*100
+hexSocial$riskPerc[which(hexSocial$ownerID %in% others30 == T)] <- 0.8
+# select ids which haven't been selected already
+index2 <- otherIDs %nin% others30 
+others70 <- otherIDs[index2==T]
+# check
+length(others70)/length(otherIDs)*100
+# now sample 50% (of all otherIDs) from these ids
+others50 <- sample(others70, (0.5*length(otherIDs)))
+# check
+length(others50)/length(otherIDs)*100
+hexSocial$riskPerc[which(hexSocial$ownerID %in% others50 == T)] <- 0.5
+# now need to select 18% from IDs which haven't been sampled already
+index3 <- others70 %nin% others50
+summary(index3==T)
+others20 <- others70[index3==T]
+# check
+length(others20)/length(otherIDs)*100
+# sample 18% 
+others18 <- sample(others20, (0.18*length(otherIDs)))
+length(others18)/length(otherIDs)*100
+hexSocial$riskPerc[which(hexSocial$ownerID %in% others18==T)] <- 0
+index4 <- others20 %nin% others18
+others2 <- others20[index4==T]
+length(others2)/length(otherIDs)*100
+hexSocial$riskPerc[which(hexSocial$ownerID %in% others2==T)] <-0.2
 
 # example
 #png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
@@ -112,3 +144,13 @@ ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = riskPerc), col = NA)+
   scale_fill_viridis()
 #dev.off()
+
+# last written to file 28/10/20
+st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
+
+# for budget
+# apply randomly to ownerIDs? or just apply to whole boroughs
+
+
+
+
