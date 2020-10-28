@@ -412,19 +412,20 @@ cluster <- c("School.grounds","Religious.grounds", "Institutional.grounds",
 
 for (i in cluster){
   
-  #i <- "Religious.grounds" # test
+  #i <- cluster[1] # test
   
   x <- hexGspace %>% 
-    filter(type == i) %>% 
-    st_union(by_feature = TRUE)
+    filter(type == i) #%>% 
+    #st_union(by_feature = TRUE)
   
   xClust <- clusterSF(x, set_units(5, "m"))
-  
+  #plot(xClust, col=xClust$group)
   #xClust$uniqueID <- paste0(i,"-",xClust$group)
   
   xRast <- rasterize(x=xClust,
-                     y=raster(extent(xClust), res=1),
+                     y=raster(extent(xClust), res=2),
                      field='group')
+  #plot(xRast)
   
   st_write(xClust, paste0(dirOut,"/hexClusters/hexGspace_",i,"_Clust.shp"), append=F)
   writeRaster(xRast, file.path(paste0(dirOut, "/hexClusters/clust",i,".tif")), format="GTiff", overwrite=TRUE)
@@ -513,8 +514,9 @@ st_write(hexGrid, paste0(dirOut,"/capitals/hexG_ownerIDs2.shp"), append=F)
 parks <- filter(hexGrid, grepl("park", ownerID))
 cmtry <- filter(hexGrid, grepl("cmtry", ownerID))
 plyf <- filter(hexGrid, grepl("plyfd", ownerID))
+amenity <- filter(hexGrid, grepl("amnt", ownerID))
 
 png(paste0(wd,"/figures/clusterID_example.png"), width = 800, height = 600)
 ggplot() +
-  geom_sf(cmtry, mapping = aes(fill = ownerID), col = NA)
+  geom_sf(amenity, mapping = aes(fill = ownerID), col = NA)
 dev.off()
