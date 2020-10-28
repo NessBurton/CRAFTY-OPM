@@ -97,7 +97,12 @@ hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
 
 
 # all other types, by cluster ID
-others <- filter(hexSocial, grepl("schl|rlgs|inst|plysp|plyfd|othsp|ten|bwl|cmtry|altmt", ownerID)) 
+# 30% agree OPM is a risk - value 0.8
+# 50% neutral - value 0.5
+# 2% disagree - value 0.2
+# 18% strongly disagree - value 0
+others <- filter(hexSocial, grepl("schl|rlgs|inst|plysp|plyfd|othsp|ten|bwl|cmtry|altmt|amnrb|amnt", ownerID)) 
+otherIDs <- unique(others$ownerID)
 
 
 # example
