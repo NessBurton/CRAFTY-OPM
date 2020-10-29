@@ -54,6 +54,9 @@ divideRow <- function(x){
 dfHex[,4:10] <- lapply(dfHex[,4:10], FUN = divideRow)
 dfHex[,11:14] <- lapply(dfHex[,11:14], FUN = divideRow)
 
+dfHex$oak_tree[which(is.na(dfHex$oak_tree))] <-0
+summary(dfHex$oak_tree)
+
 # assign suitability
 # this should range from 0-100% for rangeshiftR
 
@@ -75,6 +78,10 @@ for (i in c(1:nrows)) {
   }
   
   # now most suitable
+  
+  if (dfHex$oak_tree[i]>0){
+    suit[i] <- 100
+  }
   
   if (dfHex$nonconiferous.primary[i]>0.5){
     suit[i] <- 100
@@ -117,3 +124,8 @@ library(viridis)
 ggplot() +
   geom_sf(hexSuit, mapping = aes(fill = suit), col = NA)+
   scale_fill_viridis()
+
+head(hexSuit)
+hexSuit <- hexSuit[,c(1,3,16,17)]
+
+st_write(hexSuit, paste0(dirOut, "/for-rangeshiftR/hexGrid_OPM_suitability.shp"),append = F)
