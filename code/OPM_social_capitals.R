@@ -45,6 +45,7 @@ ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = type), col = NA)+
   scale_fill_manual(values=type.pal)
 
+##### Risk Perception
 # new risk perception variable
 hexSocial$riskPerc <- NA 
 
@@ -147,10 +148,28 @@ ggplot()+
 
 # last written to file 28/10/20
 st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
+hexSocial <- st_read(paste0(dirOut,"/capitals/hexG_social.shp"))
 
-# for budget
+##### Budget
 # apply randomly to ownerIDs? or just apply to whole boroughs
 
+# read in borough shapefiles
+boros <- st_read(paste0(dirData, "/borough_boundaries/case_studies.shp"))
+plot(boros)
+boros$borough <- c(1:4)
+# rasterise
+library(raster)
+rstBoros <- rasterize(x=boros,
+                      y=raster(extent(boros), res=2),
+                      field='borough')
+plot(rstBoros)
 
-
-
+# extract values to points
+hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
+hexPointsSP <- as_Spatial(hexPoints)
+#hexGridSP <- as_Spatial(hexSocial)
+borough <- extract(rstBoros, hexPointsSP)
+hexSocial <- cbind(hexSocial,borough)
+summary(is.na(hexSocial$borough)) # 22 NAs... how to fix?
+ggplot() +
+  geom_sf(hexSocial, mapping = aes(fill = borough), col = NA)
