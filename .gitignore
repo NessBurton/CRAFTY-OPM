@@ -8,6 +8,7 @@ data-processed/hexClusters/
 data-processed/capitals/
 data-processed/oakTrees/
 data-processed/rasters/
+data-processed/for-rangeshiftR/
 data-processed/info/
 data-processed/*.tif
 data-processed/*.tfw
