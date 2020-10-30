@@ -163,5 +163,32 @@ ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = borough), col = NA)
 
 # modelled median household income from London Atlas
-boroughs <- c("camden","westminster","kensington","hammersmith")
-income <- c(43750,47510,55620,43820)
+# include lowest median value (newham) and highest (city of london) to allow the data to be normalised
+boroughs <- c("newham","camden","westminster","kensington","hammersmith","city")
+income <- c(28780,43750,47510,55620,43820,63620)
+household.income <- as.data.frame(cbind(boroughs,income))
+household.income$income <- as.numeric(household.income$income)
+household.income$rank <- rank(-household.income$income)
+
+# normalise 0-1
+data <- household.income$income
+normalised <- (data-min(data))/(max(data)-min(data))
+hist(data)
+hist(normalised)
+household.income$income.norm <- normalised
+
+write.csv(household.income, paste0(dirOut,"/capitals/median_household_income.csv"))
+
+
+# now assign values to boroughs
+hexSocial$budget <- NA
+hexSocial$budget[which(hexSocial$borough=="camden")] <- household.income$income.norm[which(household.income$boroughs=="camden")]
+hexSocial$budget[which(hexSocial$borough=="westminster")] <- household.income$income.norm[which(household.income$boroughs=="westminster")]
+hexSocial$budget[which(hexSocial$borough=="kensington")] <- household.income$income.norm[which(household.income$boroughs=="kensington")]
+hexSocial$budget[which(hexSocial$borough=="hammersmith")] <- household.income$income.norm[which(household.income$boroughs=="hammersmith")]
+
+library(viridis)
+ggplot() +
+  geom_sf(hexSocial, mapping = aes(fill = budget), col = NA)+
+  scale_fill_viridis()
+
