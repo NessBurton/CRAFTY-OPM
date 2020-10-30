@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 data-raw/
+rangeshiftR/
 data-processed/hexGrids/
 data-processed/hexClusters/
 data-processed/capitals/
