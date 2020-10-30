@@ -10,7 +10,7 @@ dirOut <- file.path(wd, 'data-processed')
 dirData <- file.path(dirOut, 'for-rangeshiftR') 
 
 rasterizeRes <- 2 # resolution at which to rasterise the habitat polygons
-habitatRes <- 200 # Habitat resolution for rangeshifter
+habitatRes <- 30 # Habitat resolution for rangeshifter
 
 # Need to create these folders for rangeshiftr to work
 dirRsftr <- file.path(wd, 'rangeshiftR') #file.path(wd, 'test-example')
@@ -55,16 +55,16 @@ writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habi
 # Create a dataframe of habitat codes and names, then add a quality column. This defines the quality (in terms of carrying capacity)
 # for the species, and should range from 0-100%.
 # The values I have used are just made up to create an example.
-dfHabitatTypes <- as.data.frame(shpHabitat[c('priFuncN','priFunc')])
-dfHabitatTypes$geometry <- NULL
-dfHabitatTypes <- dfHabitatTypes[!duplicated(dfHabitatTypes), ]
-dfHabitatTypes$quality <- 50
-dfHabitatTypes[dfHabitatTypes$priFunc %in% c('Natural', 'Private Garden', 'Public Park Or Garden', 'Cemetery', 'Allotments Or Community Growing Spaces'),]$quality <- 100
-dfHabitatTypes[dfHabitatTypes$priFunc %in% c('Amenity - Residential Or Business', 'Land Use Changing'),]$quality <- 10
+#dfHabitatTypes <- as.data.frame(shpHabitat[c('priFuncN','priFunc')])
+#dfHabitatTypes$geometry <- NULL
+#dfHabitatTypes <- dfHabitatTypes[!duplicated(dfHabitatTypes), ]
+#dfHabitatTypes$quality <- 50
+#dfHabitatTypes[dfHabitatTypes$priFunc %in% c('Natural', 'Private Garden', 'Public Park Or Garden', 'Cemetery', 'Allotments Or Community Growing Spaces'),]$quality <- 100
+#dfHabitatTypes[dfHabitatTypes$priFunc %in% c('Amenity - Residential Or Business', 'Land Use Changing'),]$quality <- 10
 
 # Reclassify the habitat type raster using the quality values. We run RangeShiftR with the habitat quality raster.
-rstHabitatQuality <- reclassify(rstHabitat, dfHabitatTypes[c('priFuncN','quality')])
-writeRaster(rstHabitatQuality, file.path(dirRsftrInput, sprintf('HabitatQuality-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE)
+#rstHabitatQuality <- reclassify(rstHabitat, dfHabitatTypes[c('priFuncN','quality')])
+#writeRaster(rstHabitatQuality, file.path(dirRsftrInput, sprintf('HabitatQuality-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE)
 
 ######################################
 ######################################
@@ -80,6 +80,7 @@ writeRaster(rstHabitatQuality, file.path(dirRsftrInput, sprintf('HabitatQuality-
 ######################################
 
 csvSpecies <- read.csv(file=file.path(dirData, 'opm_sites.csv'), header=TRUE, sep=",")
+csvSpecies2 <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
 
 # Subset to only sites that were infested in 2012
 csvSpecies <- subset(csvSpecies, Status_2012 == 'Infested')
