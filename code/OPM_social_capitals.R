@@ -188,7 +188,9 @@ hexSocial$budget[which(hexSocial$borough=="kensington")] <- household.income$inc
 hexSocial$budget[which(hexSocial$borough=="hammersmith")] <- household.income$income.norm[which(household.income$boroughs=="hammersmith")]
 
 library(viridis)
+png(paste0(wd,"/figures/budget_capital.png"), width = 800, height = 800)
 ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = budget), col = NA)+
   scale_fill_viridis()
+dev.off()
 
