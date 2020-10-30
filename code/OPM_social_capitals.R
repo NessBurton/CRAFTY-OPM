@@ -163,6 +163,7 @@ ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = borough), col = NA)
 
 # modelled median household income from London Atlas
+# https://data.london.gov.uk/dataset/london-borough-profiles  
 # include lowest median value (newham) and highest (city of london) to allow the data to be normalised
 boroughs <- c("newham","camden","westminster","kensington","hammersmith","city")
 income <- c(28780,43750,47510,55620,43820,63620)
