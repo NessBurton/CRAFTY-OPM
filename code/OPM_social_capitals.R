@@ -153,23 +153,15 @@ hexSocial <- st_read(paste0(dirOut,"/capitals/hexG_social.shp"))
 ##### Budget
 # apply randomly to ownerIDs? or just apply to whole boroughs
 
-# read in borough shapefiles
-boros <- st_read(paste0(dirData, "/borough_boundaries/case_studies.shp"))
-plot(boros)
-boros$borough <- c(1:4)
-# rasterise
-library(raster)
-rstBoros <- rasterize(x=boros,
-                      y=raster(extent(boros), res=2),
-                      field='borough')
-plot(rstBoros)
+# read in hexGrid with boroughs
+hexGrid <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m.shp"))
+head(hexGrid)
+hexSocial <- cbind(hexSocial,hexGrid$borough)
+colnames(hexSocial)[5] <- "borough"
 
-# extract values to points
-hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
-hexPointsSP <- as_Spatial(hexPoints)
-#hexGridSP <- as_Spatial(hexSocial)
-borough <- extract(rstBoros, hexPointsSP)
-hexSocial <- cbind(hexSocial,borough)
-summary(is.na(hexSocial$borough)) # 22 NAs... how to fix?
 ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = borough), col = NA)
+
+# modelled median household income from London Atlas
+boroughs <- c("camden","westminster","kensington","hammersmith")
+income <- c(43750,47510,55620,43820)
