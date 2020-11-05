@@ -64,7 +64,13 @@ writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habi
 csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
 
 # subset to only sites that were infested in 2012
-csvSpecies <- subset(csvSpecies, Status == 'Infested' & SurveyYear == 2015)
+csvSpecies <- subset(csvSpecies, Status == 'Infested' 
+                     | Status == "Previously infested" 
+                     & SurveyYear == 2015)
+# kept previously infested based on assumption also made in Cowley et al. (2015)
+# "Given that OPM was continually spreading during our period of study...
+# ...we made the assumption that once detected in a location, 
+# OPM remained present throughout the period"
 
 # convert to shapefile
 csvSpecies <- csvSpecies[!is.na(csvSpecies$Easting), ]
@@ -161,8 +167,4 @@ range_df <- readRange(s, dirRsftr)
 par(mfrow=c(1,2))
 plotAbundance(range_df)
 plotOccupancy(range_df)
-# ...with standard deviation:
-par(mfrow=c(1,2))
-plotAbundance(range_df, sd=T, replicates = F)
-plotOccupancy(range_df, sd=T, replicates = F)
 dev.off()
