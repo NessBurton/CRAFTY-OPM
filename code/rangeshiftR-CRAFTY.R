@@ -60,17 +60,8 @@ rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasteri
 rstHabitat <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
 
 # Export as ascii file for RangeShifter.
-names(rstHabitat)
-names(rstHabitat) <- "quality"
-rstHabitat[is.na(rstHabitat[])] <- 0
-summary(values(rstHabitat))
-class(rstHabitat[]) # needs to be integer not numeric?
-class(rstHabitat[])  <- "integer"
-
-class(getValues(rstHabitat))
-writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE)
-#rstHabitat <- raster(file.path('./Inputs/Habitat-2m_arc.asc'))
-
+# be sure to specify -9999 as the no data value
+writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
 
 # Create a dataframe of habitat codes and names, then add a quality column. This defines the quality (in terms of carrying capacity)
 # for the species, and should range from 0-100%.
@@ -144,8 +135,8 @@ write.table(dfInitialIndividuals, file.path(dirRsftrInput, 'initial_inds.txt'), 
 ######################################
 
 # Load the boroughs shapefile and make sure it has the same coordinate system as the habitat data.
-shpBoroughs <- st_read(dirData, layer = "case_studies")
-shpBoroughs <- st_transform(shpBoroughs, crs(shpHabitat))
+#shpBoroughs <- st_read(dirData, layer = "case_studies")
+#shpBoroughs <- st_transform(shpBoroughs, crs(shpHabitat))
 
 ######################################
 ######################################
@@ -186,7 +177,8 @@ land <- ImportedLandscape(LandscapeFile=sprintf('Habitat-%sm.asc', habitatRes),
 demo <- Demography(Rmax = 10,
                    ReproductionType = 0) # 0 = asexual / only female; 1 = simple sexual; 2 = sexual model with explicit mating system
 
-# Basing dispersal kernel distance on the alpha value given in Cowley et al 2015. Would be good to test sensitivty around this value
+# Basing dispersal kernel distance on the alpha value given in Cowley et al 2015. 
+# Would be good to test sensitivty around this value
 # and to find other sources for dispersal distance estimates.
 disp <-  Dispersal(Emigration = Emigration(EmigProb = 0.2),
                    Transfer   = DispersalKernel(Distances = 800),
@@ -233,15 +225,7 @@ for (iteration in 1:20) {
   #result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
   #list.dirs(dirRsftr, full.names = F)
   result <- RunRS(s, sprintf('%s/', dirpath = getwd()))
-  # Error reading landscape ASCII haeders - aborting
-  # check <- read.asciigrid('./Inputs/Habitat-30m.asc')
-  # RangeShifter requires every input map to be a text file in ArcGIS raster export format, which has the following six header lines:
-  # ncols	Number of columns
-  # nrows	Number of rows
-  # xllcorner	x-coordinate (longitude) of the lower-left corner
-  # yllcorner	y-coordinate (latitude) of the lower-left corner
-  # cellsize	Resolution (in meters)
-  # NODATA_value	Value for cells having missing data (usually -9999)
+  
   
   # COMMENTED OUT - we don't need the population file for the current setup, but may be useful to check results later.
   #dfPop <- read.table(file.path(dirRsftrOuput, sprintf('Batch1_Sim%s_Land1_Pop.txt', iteration)), header=TRUE)
