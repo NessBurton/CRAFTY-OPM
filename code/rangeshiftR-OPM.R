@@ -37,7 +37,7 @@ ggplot(data = shpHabitat) +
   geom_sf(aes(fill=suit),col=NA)
 
 rasterizeRes <- 2 # resolution at which to rasterise the habitat polygons
-habitatRes <- 40 # Habitat resolution for rangeshifter
+habitatRes <- 100 # Habitat resolution for rangeshifter
 
 # rasterise at 2m
 # slow process tp rasterise at fine resolution, so check if file already exists
@@ -63,7 +63,9 @@ writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habi
 #####
 csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
 
-# subset to only sites that were infested in 2012
+# subset to only trees that were infested in 2012
+# csvSpecies <- subset(csvSpecies, Status == 'Infested' & SurveyYear == 2012)
+# change to trees that were infested or previously infested in 2015
 csvSpecies <- subset(csvSpecies, Status == 'Infested' 
                      | Status == "Previously infested" 
                      & SurveyYear == 2015)
@@ -103,7 +105,8 @@ dfInitialIndividuals$Year <- 0
 dfInitialIndividuals$Species <- 0
 dfInitialIndividuals$X <- dfInitialIndividuals$cells %% ncol(rstHabitat)
 dfInitialIndividuals$Y <- nrow(rstHabitat) - (floor(dfInitialIndividuals$cells / ncol(rstHabitat)))
-dfInitialIndividuals$Ninds <- 100
+dfInitialIndividuals$Ninds <- 100 # try reducing this to e.g. 10
+# 
 dfInitialIndividuals <- dfInitialIndividuals[ , !(names(dfInitialIndividuals) %in% c('ID', 'cells', 'layer'))]
 
 write.table(dfInitialIndividuals, file.path(dirRsftrInput, 'initial_inds.txt'), row.names = F, quote = F, sep = '\t')
@@ -157,9 +160,15 @@ validateRSparams(s)
 result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
 crs(result) <- crs(rstHabitat)
 extent(result) <- extent(rstHabitat)
-spplot(result)
+result[[1]]
+
+spplot(result[[-1]])
 # seems to be dying off?
 # what do i need to adjust? suitabilities or parameters? (or both)
+# remove suitability for multi-surface/open semi-natural
+# adjust initial occupancy (make sure not double counting and reduce Ninds)
+# test a few resolutions/Rmax/dispersal kernel
+# once i have sensible parameters, sensitivity test combinations of high/low values for each
 
 # plot abundance and occupancy
 range_df <- readRange(s, dirRsftr)
