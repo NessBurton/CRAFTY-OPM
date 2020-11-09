@@ -1,5 +1,6 @@
+
 library(parallel)
-library(doMC)
+library(doMC) # doesn't work for windows https://stackoverflow.com/questions/40426115/how-to-use-domc-under-windows-or-alternative-parallel-processing-implementation
 library(raster)
 library(sp)
 library(rJava)
