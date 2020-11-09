@@ -8,13 +8,14 @@ library(ggplot2)
 library(sf)
 
 wd <- "C:/Users/vanessa.burton/OneDrive - Forest Research/Documents/R/CRAFTY-OPM"
+wd <- "~/CRAFTY-opm" # sandbox VM
 
 #####
 # load in capital files
 #####
 
 #opm <- st_read()
-natural <- st_read(paste0(wd,"/data-processed/capitals/hexG_bio_access.shp"))
+natural <- sf::st_read(paste0(wd,"/data-processed/capitals/hexG_bio_access.shp"))
 social <- st_read(paste0(wd,"/data-processed/capitals/hexG_social.shp"))
 
 #####
