@@ -5,14 +5,17 @@ library(xml2)
 library(doSNOW) # doMC does not work in Windows
 
 # location of this script 
-setwd("~/Dropbox/KIT_Modelling/CRAFTY/CRAFTY_WEB/Calibration/") 
+#setwd("~/Dropbox/KIT_Modelling/CRAFTY/CRAFTY_WEB/Calibration/")
+setwd("C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/code")
 source("Functions_CRAFTY_rJava.R")
 source("Functions_CRAFTY_common.R")
 # source("../RScripts/Functions_CRAFTY_WEB.R")
 
 # location of the downloaded data
-path_crafty_package = "~/Dropbox/KIT_Modelling/CRAFTY/"
-path_crafty_data = "~/Dropbox/KIT_Modelling/CRAFTY/crafty_cobra_impressions_kit_data/"
+#path_crafty_package = "~/Dropbox/KIT_Modelling/CRAFTY/"
+path_crafty_package = "C:/Users/vanessa.burton.sb/Documents/"
+#path_crafty_data = "~/Dropbox/KIT_Modelling/CRAFTY/crafty_cobra_impressions_kit_data/" # is this the eclipse data folder? e.g.
+path_crafty_data = "C:/Users/vanessa.burton.sb/Documents/eclipse-workspace/CRAFTY-OPM/data/"
 # Location of the CRAFTY Jar file
 path_crafty_jar = path.expand(paste0(path_crafty_package, "CRAFTY_R_package/CRAFTY_KIT_engine2020.jar"))
 # Location of the CRAFTY lib files
