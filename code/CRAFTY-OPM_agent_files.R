@@ -23,7 +23,7 @@ nature <- c(1,NA,NA) # production of biodiversity fully reliant on nature capita
 access <- c(NA,1,NA) # production of recreation fully reliant on access capital level, 1:1
 
 no.mgmt.no.opm <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
-write.csv(no.mgmt.no.opm, paste0(agentFilepath,"no_mgmt_NOPM.csv"))
+write.csv(no.mgmt.no.opm, paste0(agentFilepath,"no_mgmt_NOPM.csv"), row.names=F)
 
 # no management (unable)
 service <- c("biodiversity","recreation","management")
@@ -36,7 +36,7 @@ nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
 no.mgmt.unable <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
-write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"))
+write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"), row.names=F)
 
 # manage (low intensity)
 service <- c("biodiversity","recreation","management")
@@ -49,7 +49,7 @@ nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
 mgmt.low <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
-write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"))
+write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # manage (med intensity)
 service <- c("biodiversity","recreation","management")
@@ -62,7 +62,7 @@ nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
 mgmt.med <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
-write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"))
+write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"), row.names=F)
 
 # manage (high intensity)
 service <- c("biodiversity","recreation","management")
@@ -75,4 +75,28 @@ nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
 mgmt.high <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
-write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"))
+write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
+
+
+##### Also capitals, services index tables, + demand
+
+# Capitals
+Name <- c("OPMpresence","riskPerc","budget","knowledge","nature","access")
+Index <- c(0,1,2,3,4,5)
+Capitals <- tibble(Name,Index)
+write.csv(Capitals, paste0(agentFilepath,"Capitals.csv"), row.names=F)
+
+# Services
+Name <- c("biodiversity","recreation","management")
+Index <- c(0,1,2)
+Services <- tibble(Name,Index)
+write.csv(Services, paste0(agentFilepath,"Services.csv"), row.names=F)
+
+# Demand
+
+Year <- 1
+biodiversity <- 1000
+recreation <- 1000
+management <- 1000
+Demand <- tibble(Year,biodiversity,recreation,management)
+write.csv(Demand, paste0(agentFilepath,"Demand.csv"), row.names=F)
