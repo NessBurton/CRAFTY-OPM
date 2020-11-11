@@ -196,3 +196,11 @@ ggplot() +
   scale_fill_viridis()
 dev.off()
 
+
+##### Knowledge - empty column for now, will rely on OPM presence
+
+hexSocial$knowledge <- 0
+
+# last written to file 11/11/20
+st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
+
