@@ -15,66 +15,66 @@ agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
 # no management (no OPM)
 service <- c("biodiversity","recreation","management")
 production <- c(1,1,NA) # if no OPM, assume maximum amount of services can be produced (excl. management)
-opm.presence <- c(NA,NA,NA) # no reliance on opm presence
-risk.perception <- c(NA,NA,NA) # no reliance on risk perception
+OPMpresence <- c(NA,NA,NA) # no reliance on opm presence
+riskPerc <- c(NA,NA,NA) # no reliance on risk perception
 budget <- c(NA,NA,NA) # no reliance on budget
 knowledge <- c(NA,NA,NA) # no reliance on knowledge
 nature <- c(1,NA,NA) # production of biodiversity fully reliant on nature capital level, 1:1
 access <- c(NA,1,NA) # production of recreation fully reliant on access capital level, 1:1
 
-no.mgmt.no.opm <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
+no.mgmt.no.opm <- tibble(service,production,OPMpresence,riskPerc,budget,knowledge,nature,access)
 write.csv(no.mgmt.no.opm, paste0(agentFilepath,"no_mgmt_NOPM.csv"), row.names=F)
 
 # no management (unable)
 service <- c("biodiversity","recreation","management")
 production <- c(0.4,0.4,NA) # if OPM present but no management, service provision compromised
-opm.presence <- c(1,1,1) # should only appear when OPM is present 
-risk.perception <- c(NA,NA,NA) # no reliance
+OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+riskPerc <- c(NA,NA,NA) # no reliance
 budget <- c(NA,NA,NA) # no reliance 
 knowledge <- c(NA,NA,NA) # no reliance
 nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
-no.mgmt.unable <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
+no.mgmt.unable <- tibble(service,production,OPMpresence,riskPerc,budget,knowledge,nature,access)
 write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"), row.names=F)
 
 # manage (low intensity)
 service <- c("biodiversity","recreation","management")
 production <- c(1,0.6,1) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
-opm.presence <- c(1,1,1) # should only appear when OPM is present 
-risk.perception <- c(NA,NA,0.2) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
+OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+riskPerc <- c(NA,NA,0.2) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(NA,NA,0.2) # some budget required
 knowledge <- c(NA,NA,0.8) # management requires knowledge
 nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
-mgmt.low <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
+mgmt.low <- tibble(service,production,OPMpresence,riskPerc,budget,knowledge,nature,access)
 write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # manage (med intensity)
 service <- c("biodiversity","recreation","management")
 production <- c(0.6,0.6,1) # attempting balance of objectives
-opm.presence <- c(1,1,1) # should only appear when OPM is present 
-risk.perception <- c(NA,NA,0.5) # medium risk perception
+OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+riskPerc <- c(NA,NA,0.5) # medium risk perception
 budget <- c(NA,NA,0.5) # requires more budget for spraying etc. 
 knowledge <- c(NA,NA,0.8) # management requires knowledge
 nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
-mgmt.med <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
+mgmt.med <- tibble(service,production,OPMpresence,riskPerc,budget,knowledge,nature,access)
 write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"), row.names=F)
 
 # manage (high intensity)
 service <- c("biodiversity","recreation","management")
 production <- c(0.5,1,1) # focus is on reducing risk to public health and allowing continued access
-opm.presence <- c(1,1,1) # should only appear when OPM is present 
-risk.perception <- c(NA,NA,1) # this kind of management only possible where risk perceptions...
+OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+riskPerc <- c(NA,NA,1) # this kind of management only possible where risk perceptions...
 budget <- c(NA,NA,1) # and budget are high
 knowledge <- c(NA,NA,0.8) # management requires knowledge
 nature <- c(1,NA,NA) # production of biodiversity dependent on nature capital
 access <- c(NA,1,NA) # production of recreation dependent on access capital
 
-mgmt.high <- tibble(service,production,opm.presence,risk.perception,budget,knowledge,nature,access)
+mgmt.high <- tibble(service,production,OPMpresence,riskPerc,budget,knowledge,nature,access)
 write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
 
 
