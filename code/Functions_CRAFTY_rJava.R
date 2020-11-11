@@ -1,39 +1,41 @@
-
 library(parallel)
-library(doMC) # doesn't work for windows https://stackoverflow.com/questions/40426115/how-to-use-domc-under-windows-or-alternative-parallel-processing-implementation
+library(doMC)
 library(raster)
 library(sp)
-library(rJava)
- 
- 
+
+
 
 # Get java home using rJava
-.jinit()
-jdk.base.path <- .jcall( 'java/lang/System', 'S', 'getProperty', 'java.home' )
-# if it does not work, 
-# jdk.base.path <- "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/" # OSX
-# jdk.base.path <- "/usr/lib/jvm/java-8-openjdk-amd64/" # Linux
 
-jdk.bin.path <- paste0(jdk.base.path, "bin/java")
-
+getJdkPath = function(x) {
+  require(rJava)
+  .jinit()
+  jdk.base.path <- .jcall( 'java/lang/System', 'S', 'getProperty', 'java.home' )
+  # if it does not work, 
+  # jdk.base.path <- "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/" # OSX
+  # jdk.base.path <- "/usr/lib/jvm/java-8-openjdk-amd64/" # Linux
   
-java.mx <- "4g" # 25 GB max in LRZ
+  jdk.bin.path <- paste0(jdk.base.path, "bin/java")
+  return(jdk.bin.path)
+}
+
+java.mx <- "12g" # 25 GB max in LRZ
 java.ms <- "1g -d64"  
 
 # .jinit( parameters="-Dfile.encoding=UTF-8 -Dlog4j.configuration=log4j_cluster.properties")
-.jinit(parameters = "-Dfile.encoding=UTF-8", silent = FALSE, force.init = FALSE)
-.jinit( parameters=paste0("-Xms", java.ms, " -Xmx", java.mx)) # The .jinit returns 0 if the JVM got initialized and a negative integer if it did not. A positive integer is returned if the JVM got initialized partially. Before initializing the JVM, the rJava library must be loaded.
+# .jinit(parameters = "-Dfile.encoding=UTF-8", silent = FALSE, force.init = FALSE)
+# .jinit( parameters=paste0("-Xms", java.ms, " -Xmx", java.mx)) # The .jinit returns 0 if the JVM got initialized and a negative integer if it did not. A positive integer is returned if the JVM got initialized partially. Before initializing the JVM, the rJava library must be loaded.
 # .jclassPath() # print out the current class path settings. 
 
 
 aft.names.fromzero <- c( "Ext_AF", "IA", "Int_AF", "Int_Fa", "IP", "MF", "Min_man", "Mix_Fa", "Mix_For", "Mix_P", "Multifun", "P-Ur", "UL", "UMF", "Ur", "VEP", "EP")
 
 
- 
+
 CRAFTY_main_name = "org.volante.abm.serialization.ModelRunner" # Better using the reflection based API in rJava.  
 
 crafty_sp =NA 
- 
+
 
 
 # does not work on linux 
@@ -42,7 +44,7 @@ crafty_sp =NA
 #     CRAFTY_sargs[length(CRAFTY_sargs) + 1 ] = "-i"
 # }
 
-  
+
 # public void doOutput(Regions r) {
 #     for (Outputter o : outputs) {
 #         if (this.runInfo.getSchedule().getCurrentTick() >= o.getStartYear()
