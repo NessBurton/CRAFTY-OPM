@@ -14,7 +14,7 @@ agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
 
 # no management (no OPM)
 Service <- c("biodiversity","recreation","management")
-Production <- c(1,1,NA) # if no OPM, assume maximum amount of Services can be produced (excl. management)
+Production <- c(1,1,0) # if no OPM, assume maximum amount of Services can be produced (excl. management)
 OPMpresence <- c(NA,NA,NA) # no reliance on opm presence
 riskPerc <- c(NA,NA,NA) # no reliance on risk perception
 budget <- c(NA,NA,NA) # no reliance on budget
@@ -27,7 +27,7 @@ write.csv(no.mgmt.no.opm, paste0(agentFilepath,"no_mgmt_NOPM.csv"), row.names=F)
 
 # no management (unable)
 Service <- c("biodiversity","recreation","management")
-Production <- c(0.4,0.4,NA) # if OPM present but no management, Service provision compromised
+Production <- c(0.4,0.4,0) # if OPM present but no management, Service provision compromised
 OPMpresence <- c(1,1,1) # should only appear when OPM is present 
 riskPerc <- c(NA,NA,NA) # no reliance
 budget <- c(NA,NA,NA) # no reliance 
