@@ -1,5 +1,6 @@
 library(parallel)
-library(doMC)
+#library(doMC)
+library(doSNOW)
 library(raster)
 library(sp)
 
