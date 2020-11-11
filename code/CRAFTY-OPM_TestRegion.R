@@ -26,6 +26,11 @@ social <- social %>% st_drop_geometry()
 TestRegion <- merge(natural,social,by="joinID")
 
 #####
+# add empty OPM presence column for now
+
+TestRegion$OPMpresence <- 0
+
+#####
 # extract geometry into x and y
 #####
 
@@ -56,13 +61,6 @@ TestRegion$Y <- round(TestRegion$Y / 1000, digits=2)
 ggplot(TestRegion)+
   geom_tile(aes(X,Y,fill=type))
 
-#####
-# edit order of columns and write to csv
-#####
-
-head(TestRegion)
-head(TestRegion[,c(1,7,8,5,6,2,3)])
-
 # note to self. where 'type' is non-greenspace, mask out/remove from CRAFTY?
 # e.g.
 
@@ -73,8 +71,19 @@ TestRegion %>%
   ggplot()+
   geom_tile(aes(X,Y,fill=type))
 
-head(TestRegion[,c(1,7,8,5,6,2,3)])
-TestRegion <- TestRegion[,c(1,7,8,5,6,2,3)]
+#####
+# initial agent allocation - no management everywhere
+#####
+
+TestRegion$Agent <- "no_mgmt_NOPM"
+
+#####
+# edit order of columns and write to csv
+#####
+
+head(TestRegion)
+head(TestRegion[,c(1,11,12,13,10,6,8,9,2,3)])
+TestRegion <- TestRegion[,c(1,11,12,13,10,6,8,9,2,3)]
 
 # make NAs 0 for CRAFTY?
 TestRegion[is.na(TestRegion)] <- 0
@@ -83,4 +92,4 @@ TestRegion %>%
   ggplot()+
   geom_tile(aes(X,Y,fill=riskPerc))
 
-write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/TestRegion.csv"))
+write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/TestRegion.csv"), row.names = F)
