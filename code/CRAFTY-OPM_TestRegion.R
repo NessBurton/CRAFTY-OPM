@@ -72,3 +72,15 @@ TestRegion <- TestRegion %>%
 TestRegion %>%
   ggplot()+
   geom_tile(aes(X,Y,fill=type))
+
+head(TestRegion[,c(1,7,8,5,6,2,3)])
+TestRegion <- TestRegion[,c(1,7,8,5,6,2,3)]
+
+# make NAs 0 for CRAFTY?
+TestRegion[is.na(TestRegion)] <- 0
+
+TestRegion %>%
+  ggplot()+
+  geom_tile(aes(X,Y,fill=riskPerc))
+
+write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/TestRegion.csv"))
