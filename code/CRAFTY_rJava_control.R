@@ -1,3 +1,4 @@
+
 library(raster)
 library(sp)
 library(jdx)
@@ -13,13 +14,13 @@ source("Functions_CRAFTY_common.R")
 
 # location of the downloaded data
 #path_crafty_package = "~/Dropbox/KIT_Modelling/CRAFTY/"
-path_crafty_package = "C:/Users/vanessa.burton.sb/Documents/"
+path_crafty_package = "C:/Users/vanessa.burton.sb/Documents/CRAFTY_R_package/"
 #path_crafty_data = "~/Dropbox/KIT_Modelling/CRAFTY/crafty_cobra_impressions_kit_data/" # is this the eclipse data folder? e.g.
 path_crafty_data = "C:/Users/vanessa.burton.sb/Documents/eclipse-workspace/CRAFTY-OPM/data/"
 # Location of the CRAFTY Jar file
 path_crafty_jar = path.expand(paste0(path_crafty_package, "CRAFTY_R_package/CRAFTY_KIT_engine2020.jar"))
 # Location of the CRAFTY lib files
-path_crafty_libs = path.expand(paste0(path_crafty_package, "CRAFTY_R_package/lib/"))
+path_crafty_libs = path.expand(paste0(path_crafty_package, "lib/"))
 crafty_libs = list.files(paste0(path_crafty_libs), pattern = "jar")
 
 # Make sure that in the classpath setting , gt-opengis-9.0.jar must be included before geoapi-20050403.jar. Otherwise it throws an uncatchable error during the giving up process: loading libraries without ordering them particularly, the opengis library is loaded after the geoapi library following alphabetical order.
