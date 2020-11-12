@@ -7,7 +7,8 @@ library(sf)
 library(ggplot2)
 
 #wd <- "~/R/CRAFTY-OPM" # FR
-wd <- "/Users/Vanessa/Documents/crafty-opm" # mac
+#wd <- "/Users/Vanessa/Documents/crafty-opm" # mac
+wd <- "~/CRAFTY-opm"# sandbox VM
 #setwd(wd)
 dirOut <- file.path(wd, 'data-processed')
 dirData <- file.path(dirOut, 'for-rangeshiftR') 
@@ -18,6 +19,9 @@ dirRsftrInput <- file.path(dirRsftr,"Inputs")
 dirRsftrOuput <- file.path(dirRsftr,"Outputs")
 dirRsftrOutputMaps <- file.path(dirRsftr,"Output_Maps")
 dirRsftr <- file.path(wd, 'rangeshiftR/') # need to add the / for this path to work in RunRS
+#dir.create(dirRsftrInput)
+#dir.create(dirRsftrOuput)
+#dir.create(dirRsftrOutputMaps)
 
 #####
 # load in habitat data
