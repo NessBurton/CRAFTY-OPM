@@ -46,17 +46,19 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 # rasterise at 2m
 # slow process tp rasterise at fine resolution, so check if file already exists
 #if ( !file.exists(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))) {
-  #rstHabitat <- rasterize(x=shpHabitat,
-                          #y=raster(extent(shpHabitat), res=rasterizeRes),
-                          #field='suit',
-                          #fun=min, # where there are overlapping polygons, use lowest value (is there a better way to choose?)
-                          #update=TRUE)
-  #writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
+  rstHabitat <- rasterize(x=shpHabitat,
+                          y=raster(extent(shpHabitat), res=rasterizeRes),
+                          field='suit',
+                          fun=min, # where there are overlapping polygons, use lowest value (is there a better way to choose?)
+                          update=TRUE)
+  writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
 #}
 
 # read in and aggregate
 rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
 rstHabitat <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
+
+plot(rstHabitat)
 
 # export as ascii file for RangeShifter.
 # be sure to specify -9999 as the no data value (NAflag argument)
