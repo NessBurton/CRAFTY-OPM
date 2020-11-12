@@ -30,7 +30,7 @@ crafty_libs = crafty_libs[crafty_libs != "geoapi-20050403.jar"  ]
 crafty_libs = c(crafty_libs,  "geoapi-20050403.jar")
 
 # Location of the input data
-path_crafty_inputdata = path.expand(paste0(path_crafty_data, "data_EU28/"))
+path_crafty_inputdata = path.expand(paste0(path_crafty_data, "data_EU28/")) # just the eclipse data folder path again?
 
 
 
@@ -234,7 +234,8 @@ foreach(s.idx = 1:n.scenario, .errorhandling = "stop",.packages = c("doSNOW"), .
     stopifnot(nextTick == (tick + 1 )) # assertion
 
 
-      # safe to alter capital csv files 
+      # safe to alter capital csv files
+      # is here where i would be able to read in new OPM presence capital from RangeshiftR?
 
 
 
