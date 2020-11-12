@@ -102,11 +102,11 @@ for (i in c(1:nrows)) {
     }
     
     if (dfHex$open.seminat[i]>0.45){ # same threshold as for public parks in type allocation
-      suit[i] <- 60
+      suit[i] <- 0
     }
     
     if (dfHex$multisurface[i]>0.35){ # same threshold as for private gardens in type allocation
-      suit[i] <- 50
+      suit[i] <- 0
     }
     
   }
@@ -119,6 +119,8 @@ for (i in c(1:nrows)) {
 # check
 hexSuit$suit <- as.numeric(suit)
 dfHex$suit <- as.numeric(suit)
+
+hist(dfHex$suit)
 
 library(viridis)
 ggplot() +
