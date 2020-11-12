@@ -6,6 +6,7 @@ library(Rcpp)
 library(devtools)
 Rcpp::evalCpp("2+2")
 setwd("~/Documents/RangeshiftR/RangeshiftR") # package directory
+setwd("~/R/RangeshiftR/RangeshiftR") # sandbox
 devtools::install()
 
 # libraries
@@ -14,8 +15,9 @@ library(raster)
 library(RangeshiftR)
 library(sf)
 
-wd <- "~/R/CRAFTY-OPM" # FR
-wd <- "~/Documents/crafty-opm" # mac
+#wd <- "~/R/CRAFTY-OPM" # FR
+#wd <- "~/Documents/crafty-opm" # mac
+wd <- "~/CRAFTY-opm"# sandbox VM
 setwd(wd)
 dirOut <- file.path(wd, 'data-processed')
 dirData <- file.path(dirOut, 'for-rangeshiftR') 
