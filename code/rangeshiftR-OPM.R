@@ -18,7 +18,7 @@ dirRsftr <- file.path(wd, 'rangeshiftR')
 dirRsftrInput <- file.path(dirRsftr,"Inputs")
 dirRsftrOuput <- file.path(dirRsftr,"Outputs")
 dirRsftrOutputMaps <- file.path(dirRsftr,"Output_Maps")
-dirRsftr <- file.path(wd, 'rangeshiftR/') # need to add the / for this path to work in RunRS
+dirRsftr <- file.path('C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshiftR/') # need to add the / for this path to work in RunRS
 #dir.create(dirRsftrInput)
 #dir.create(dirRsftrOuput)
 #dir.create(dirRsftrOutputMaps)
@@ -46,19 +46,32 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 # rasterise at 2m
 # slow process tp rasterise at fine resolution, so check if file already exists
 #if ( !file.exists(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))) {
-  rstHabitat <- rasterize(x=shpHabitat,
-                          y=raster(extent(shpHabitat), res=rasterizeRes),
-                          field='suit',
-                          fun=min, # where there are overlapping polygons, use lowest value (is there a better way to choose?)
-                          update=TRUE)
-  writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
+  #rstHabitat <- rasterize(x=shpHabitat,
+                          #y=raster(extent(shpHabitat), res=rasterizeRes),
+                          #field='suit',
+                          #fun=min, # where there are overlapping polygons, use lowest value (is there a better way to choose?)
+                          #update=TRUE)
+  #writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)), overwrite=TRUE)
 #}
 
+### WRITE RASTER!!!!!
+plot(rstHabitat) 
 # read in and aggregate
 rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
-rstHabitat <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
-
 plot(rstHabitat)
+rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
+rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
+rstMean <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=mean)
+rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
+# need to decide whether to use fun=min or fun=max here. min underestimates a lot but max probably overestimates too much
+plot(rstMin)
+plot(rstMax)
+plot(rstMean)
+plot(rstModal) # most frequent value - seems to represent the habitat the best, go with this
+# doesn't overestimate and still picks up some smaller areas
+# but definitely loses smaller areas
+
+rstHabitat <- rstModal
 
 # export as ascii file for RangeShifter.
 # be sure to specify -9999 as the no data value (NAflag argument)
@@ -111,9 +124,12 @@ dfInitialIndividuals$Year <- 0
 dfInitialIndividuals$Species <- 0
 dfInitialIndividuals$X <- dfInitialIndividuals$cells %% ncol(rstHabitat)
 dfInitialIndividuals$Y <- nrow(rstHabitat) - (floor(dfInitialIndividuals$cells / ncol(rstHabitat)))
-dfInitialIndividuals$Ninds <- 100 # try reducing this to e.g. 10
+dfInitialIndividuals$Ninds <- 10 #100 # try reducing this to e.g. 10
 # 
 dfInitialIndividuals <- dfInitialIndividuals[ , !(names(dfInitialIndividuals) %in% c('ID', 'cells', 'layer'))]
+
+# make sure individuals aren't being counted more than once in the same location (due to multiple tree id points)
+dfInitialIndividuals <- unique(dfInitialIndividuals)
 
 write.table(dfInitialIndividuals, file.path(dirRsftrInput, 'initial_inds.txt'), row.names = F, quote = F, sep = '\t')
 
@@ -167,7 +183,7 @@ result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
 crs(result) <- crs(rstHabitat)
 extent(result) <- extent(rstHabitat)
 result[[1]]
-
+spplot(result)
 spplot(result[[-1]])
 # seems to be dying off?
 # what do i need to adjust? suitabilities or parameters? (or both)
@@ -177,7 +193,7 @@ spplot(result[[-1]])
 # once i have sensible parameters, sensitivity test combinations of high/low values for each
 
 # plot abundance and occupancy
-range_df <- readRange(s, dirRsftr)
+range_df <- readRange(s, "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshiftR/")
 # ...with replicates:
 par(mfrow=c(1,2))
 plotAbundance(range_df)
