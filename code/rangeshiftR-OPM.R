@@ -185,12 +185,7 @@ extent(result) <- extent(rstHabitat)
 result[[1]]
 spplot(result)
 spplot(result[[-1]])
-# seems to be dying off?
-# what do i need to adjust? suitabilities or parameters? (or both)
-# remove suitability for multi-surface/open semi-natural
-# adjust initial occupancy (make sure not double counting and reduce Ninds)
-# test a few resolutions/Rmax/dispersal kernel
-# once i have sensible parameters, sensitivity test combinations of high/low values for each
+
 
 # plot abundance and occupancy
 range_df <- readRange(s, "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshiftR/")
