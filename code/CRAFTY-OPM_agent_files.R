@@ -78,6 +78,73 @@ mgmt.high <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,
 write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
 
 
+##### Agent behavioural parameter files
+
+aftParamId <- 0
+givingInDistributionMean <- 0
+givingInDistributionSD <- 0
+givingUpDistributionMean <- 0
+givingUpDistributionSD <- 0
+serviceLevelNoiseMin <- 1
+serviceLevelNoiseMax <- 1
+givingUpProb <- 0
+productionCsvFile <- ".//production/%s/no_mgmt_NOPM.csv"
+params0 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+write.csv(params0, paste0(agentFilepath,"AftParams_no_mgmt_NOPM.csv"), row.names=F)
+
+aftParamId <- 0
+givingInDistributionMean <- 0
+givingInDistributionSD <- 0
+givingUpDistributionMean <- 0
+givingUpDistributionSD <- 0
+serviceLevelNoiseMin <- 1
+serviceLevelNoiseMax <- 1
+givingUpProb <- 0
+productionCsvFile <- ".//production/%s/no_mgmt_unable.csv"
+params1 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+write.csv(params1, paste0(agentFilepath,"AftParams_no_mgmt_unable.csv"), row.names=F)
+
+aftParamId <- 0
+givingInDistributionMean <- 0
+givingInDistributionSD <- 0
+givingUpDistributionMean <- 0
+givingUpDistributionSD <- 0
+serviceLevelNoiseMin <- 1
+serviceLevelNoiseMax <- 1
+givingUpProb <- 0
+productionCsvFile <- ".//production/%s/mgmt_lowInt.csv"
+params2 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+write.csv(params2, paste0(agentFilepath,"AftParams_mgmt_lowInt.csv"), row.names=F)
+
+aftParamId <- 0
+givingInDistributionMean <- 0
+givingInDistributionSD <- 0
+givingUpDistributionMean <- 0
+givingUpDistributionSD <- 0
+serviceLevelNoiseMin <- 1
+serviceLevelNoiseMax <- 1
+givingUpProb <- 0
+productionCsvFile <- ".//production/%s/mgmt_medInt.csv"
+params3 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+write.csv(params3, paste0(agentFilepath,"AftParams_mgmt_medInt.csv"), row.names=F)
+
+aftParamId <- 0
+givingInDistributionMean <- 0
+givingInDistributionSD <- 0
+givingUpDistributionMean <- 0
+givingUpDistributionSD <- 0
+serviceLevelNoiseMin <- 1
+serviceLevelNoiseMax <- 1
+givingUpProb <- 0
+productionCsvFile <- ".//production/%s/mgmt_highInt.csv"
+params4 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+write.csv(params4, paste0(agentFilepath,"AftParams_mgmt_highInt.csv"), row.names=F)
+
 ##### Also capitals, Services index tables, + demand
 
 # Capitals
