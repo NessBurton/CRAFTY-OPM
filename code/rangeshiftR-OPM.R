@@ -195,6 +195,8 @@ plotAbundance(range_df)
 plotOccupancy(range_df)
 dev.off()
 
+# read population output file into a data frame
+pop_df <- readPop(s, "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshiftR/")
 
 #####
 # sensitivity analysis
