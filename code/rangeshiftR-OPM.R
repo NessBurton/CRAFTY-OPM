@@ -59,14 +59,14 @@ plot(rstHabitat)
 # read in and aggregate
 rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
 plot(rstHabitat)
-rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
-rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
-rstMean <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=mean)
+#rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
+#rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
+#rstMean <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=mean)
 rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
 # need to decide whether to use fun=min or fun=max here. min underestimates a lot but max probably overestimates too much
-plot(rstMin)
-plot(rstMax)
-plot(rstMean)
+#plot(rstMin)
+#plot(rstMax)
+#plot(rstMean)
 plot(rstModal) # most frequent value - seems to represent the habitat the best, go with this
 # doesn't overestimate and still picks up some smaller areas
 # but definitely loses smaller areas
@@ -182,9 +182,9 @@ validateRSparams(s)
 result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
 crs(result) <- crs(rstHabitat)
 extent(result) <- extent(rstHabitat)
-result[[1]]
+#result[[1]]
 spplot(result)
-spplot(result[[-1]])
+#spplot(result[[-1]])
 
 
 # plot abundance and occupancy
@@ -194,3 +194,34 @@ par(mfrow=c(1,2))
 plotAbundance(range_df)
 plotOccupancy(range_df)
 dev.off()
+
+
+#####
+# sensitivity analysis
+#####
+
+# parameters to sensitivity test
+# Ninds
+# Rmax
+# Dispersal kernel
+
+# data frame of parameter variations
+# full factorial design
+# https://www.r-bloggers.com/2009/12/design-of-experiments-–-full-factorial-designs/
+# http://www.lithoguru.com/scientist/statistics/DOE%20Factorial%20Design.R
+install.packages("AlgDesign")
+library(AlgDesign)
+
+# The common 2^k design (two levels for each factor):
+df2 <- gen.factorial(levels = 2, nVars = 3, varNames=c("Ninds","Rmax","Dispersal"))
+df2
+# the output is a data frame containing the factorial design
+# 8 runs/experiments in this case
+
+# 3^k?
+df3 <- gen.factorial(levels = 3, nVars = 3, center = TRUE, varNames = c("Ninds","Rmax","Dispersal"))
+df3
+# this would give 27 runs/experiments with all possible combinations of med (0?) high (1?) and low (-1) values for each parameter
+# for each experiment, store result of interest from rangeshiftR e.g. % occupied cells?
+
+
