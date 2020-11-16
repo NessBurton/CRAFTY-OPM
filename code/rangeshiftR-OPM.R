@@ -226,4 +226,54 @@ df3
 # this would give 27 runs/experiments with all possible combinations of med (0?) high (1?) and low (-1) values for each parameter
 # for each experiment, store result of interest from rangeshiftR e.g. % occupied cells?
 
+paramSens <- df2
+# now define parameters
+paramSens$K[which(paramSens$K==-1)] <- 50
+paramSens$K[which(paramSens$K==1)] <- 100
+paramSens$Rmax[which(paramSens$Rmax==-1)] <- 10
+paramSens$Rmax[which(paramSens$R==1)] <- 20
+paramSens$Dispersal[which(paramSens$Dispersal==-1)] <- 600
+paramSens$Dispersal[which(paramSens$Dispersal==1)] <- 1000
 
+paramSens$occupied <- NA
+
+for (i in c(1:nrow(paramSens))){
+  
+  params <- paramSens[i,]
+  
+  expmt <- as.numeric(row.names(params))
+  
+  rangeshiftrYears <- 20
+  
+  sim <- Simulation(Simulation = expmt,
+                    Years = rangeshiftrYears,
+                    Replicates = 1,
+                    OutIntPop = 1)
+  
+  land <- ImportedLandscape(LandscapeFile=sprintf('Habitat-%sm.asc', habitatRes),
+                            Resolution=habitatRes,
+                            HabitatQuality=TRUE,
+                            K=params[[1]]) # carrying capacity (individuals per hectare) when habitat at 100% quality
+  
+  demo <- Demography(Rmax = params[[2]],
+                     ReproductionType = 0) # 0 = asexual / only female; 1 = simple sexual; 2 = sexual model with explicit mating system
+  
+  disp <-  Dispersal(Emigration = Emigration(EmigProb = 0.2),
+                     Transfer   = DispersalKernel(Distances = params[[3]]),
+                     Settlement = Settlement() )
+  
+  init <- Initialise(InitType=2,
+                     InitIndsFile='initial_inds.txt')
+  
+  # Setup the simulation with the parameters defined above.
+  s <- RSsim(simul = sim, land = land, demog = demo, dispersal = disp, init = init)
+  validateRSparams(s)
+  
+  RunRS(s, sprintf('%s/', dirpath = dirRsftr))
+  
+  # read in range results
+  range_df <- readRange(s, sprintf('%s/', dirpath = dirRsftr))
+  
+  # extract N occupied cells in year 20?
+  paramSens$occupied[expmt] <- range_df$NOccupCells[which(range_df$Year==20)]
+}
