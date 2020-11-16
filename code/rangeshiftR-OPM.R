@@ -203,7 +203,7 @@ pop_df <- readPop(s, "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshift
 #####
 
 # parameters to sensitivity test
-# Ninds
+# K carring capacity
 # Rmax
 # Dispersal kernel
 
@@ -215,13 +215,13 @@ install.packages("AlgDesign")
 library(AlgDesign)
 
 # The common 2^k design (two levels for each factor):
-df2 <- gen.factorial(levels = 2, nVars = 3, varNames=c("Ninds","Rmax","Dispersal"))
+df2 <- gen.factorial(levels = 2, nVars = 3, varNames=c("K","Rmax","Dispersal"))
 df2
 # the output is a data frame containing the factorial design
 # 8 runs/experiments in this case
 
 # 3^k?
-df3 <- gen.factorial(levels = 3, nVars = 3, center = TRUE, varNames = c("Ninds","Rmax","Dispersal"))
+df3 <- gen.factorial(levels = 3, nVars = 3, center = TRUE, varNames = c("K","Rmax","Dispersal"))
 df3
 # this would give 27 runs/experiments with all possible combinations of med (0?) high (1?) and low (-1) values for each parameter
 # for each experiment, store result of interest from rangeshiftR e.g. % occupied cells?
