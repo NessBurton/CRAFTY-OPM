@@ -31,8 +31,8 @@ dirRsftr <- file.path('C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshif
 # 95% = woodland, non-coniferous secondary category in OSMM
 # 90% = woodland, non-coniferous tertiary category in OSMM
 # 85% = other woodland (based on greenspace data, if not covered by OSMM above)
-# 60% = open semi-natural (greenspace)
-# 50% = multi-surface (greenspace) - this is how most gardens are classified
+# 0% = open semi-natural (greenspace)
+# 0% = multi-surface (greenspace) - this is how most gardens are classified
 # 0% = all remaining areas
 shpHabitat <- st_read(dirData, layer = "hexGrid_OPM_suitability")
 
@@ -54,8 +54,6 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
   #writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)), overwrite=TRUE)
 #}
 
-### WRITE RASTER!!!!!
-plot(rstHabitat) 
 # read in and aggregate
 rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
 plot(rstHabitat)
@@ -85,9 +83,8 @@ csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, se
 # subset to only trees that were infested in 2012
 # csvSpecies <- subset(csvSpecies, Status == 'Infested' & SurveyYear == 2012)
 # change to trees that were infested or previously infested in 2015
-csvSpecies <- subset(csvSpecies, Status == 'Infested' 
-                     | Status == "Previously infested" 
-                     & SurveyYear == 2015)
+csvSpecies <- subset(csvSpecies, SurveyYear == 2013)
+csvSpecies <- subset(csvSpecies, Status == 'Infested' | Status == "Previously infested")
 # kept previously infested based on assumption also made in Cowley et al. (2015)
 # "Given that OPM was continually spreading during our period of study...
 # ...we made the assumption that once detected in a location, 
@@ -137,7 +134,7 @@ write.table(dfInitialIndividuals, file.path(dirRsftrInput, 'initial_inds.txt'), 
 # parameter set-up
 #####
 # we need to simulate at least 2 years of rangeshiftR for each CRAFTY iteration.
-rangeshiftrYears <- 20
+rangeshiftrYears <- 7
 
 sim <- Simulation(Simulation = 1,
                   Years = rangeshiftrYears,
