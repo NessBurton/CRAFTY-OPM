@@ -55,80 +55,109 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 #}
 
 # read in and aggregate
-rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
-plot(rstHabitat)
+#rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
+#plot(rstHabitat)
 #rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
 #rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
 #rstMean <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=mean)
-rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
+#rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
 # need to decide whether to use fun=min or fun=max here. min underestimates a lot but max probably overestimates too much
 #plot(rstMin)
 #plot(rstMax)
 #plot(rstMean)
-plot(rstModal) # most frequent value - seems to represent the habitat the best, go with this
+#plot(rstModal) # most frequent value - seems to represent the habitat the best, go with this
 # doesn't overestimate and still picks up some smaller areas
 # but definitely loses smaller areas
 
-rstHabitat <- rstModal
+#rstHabitat <- rstModal
 
 # export as ascii file for RangeShifter.
 # be sure to specify -9999 as the no data value (NAflag argument)
-writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
+#writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
+rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)))
 
 #####
 # species locations
 #####
 csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
 
-# subset to only trees that were infested in 2012
-# csvSpecies <- subset(csvSpecies, Status == 'Infested' & SurveyYear == 2012)
-# change to trees that were infested or previously infested in 2015
-csvSpecies <- subset(csvSpecies, SurveyYear == 2013)
-csvSpecies <- subset(csvSpecies, Status == 'Infested' | Status == "Previously infested")
-# kept previously infested based on assumption also made in Cowley et al. (2015)
+# subset to  trees that were infested or previously infested
+# keep previously infested based on assumption also made in Cowley et al. (2015)
 # "Given that OPM was continually spreading during our period of study...
 # ...we made the assumption that once detected in a location, 
 # OPM remained present throughout the period"
+# need to choose 'best' year
 
-# convert to shapefile
-csvSpecies <- csvSpecies[!is.na(csvSpecies$Easting), ]
-csvSpecies <- csvSpecies[!is.na(csvSpecies$Northing), ]
-shpInitialIndividuals <- csvSpecies
-rm(csvSpecies)
-coordinates(shpInitialIndividuals) <- ~Easting+Northing
-projection(shpInitialIndividuals) <- crs(shpHabitat)
-shapefile(shpInitialIndividuals, file.path(dirData, "opm_trees.shp"), overwrite=TRUE)
+# write a few different initial individual files and compare
+years <- as.numeric(c(2012,2013,2014,2015))
+# also test a few options for number of initial individuals
+Ninds <- as.numeric(c(10,25,50,75))
 
-# crop to species locations only within the study landscape
-shpInitialIndividuals <- crop(shpInitialIndividuals, extent(shpHabitat))
-shpInitialIndividuals$n <- 1
+for (i in years){ 
+  
+  #i <- years[1]
+  csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
+  csvSpecies <- subset(csvSpecies, SurveyYear == i)
+  csvSpecies <- subset(csvSpecies, Status == 'Infested' | Status == "Previously infested")
+  
+  # convert to shapefile
+  csvSpecies <- csvSpecies[!is.na(csvSpecies$Easting), ]
+  csvSpecies <- csvSpecies[!is.na(csvSpecies$Northing), ]
+  shpInitialIndividuals <- csvSpecies
+  rm(csvSpecies)
+  coordinates(shpInitialIndividuals) <- ~Easting+Northing
+  projection(shpInitialIndividuals) <- crs(shpHabitat)
+  shapefile(shpInitialIndividuals, file.path(dirData, paste0('opm_trees_',i,'.shp')), overwrite=TRUE)
+  
+  # crop to species locations only within the study landscape
+  shpInitialIndividuals <- crop(shpInitialIndividuals, extent(shpHabitat))
+  shpInitialIndividuals$n <- 1
+  
+  # check and write to file
+  shpInitialIndividuals <- st_as_sf(shpInitialIndividuals)
+  png(paste0(dirRsftrOutputMaps,'/initial_individuals_',i,'.png'), width = 800, height = 800)
+  ggplot(data = shpHabitat) +
+    geom_sf(aes(fill=suit),col=NA) +
+    geom_sf(data = shpInitialIndividuals)
+  dev.off()
+  
+  # need to rasterise then extract the species locations to get the xy, row/col (not spatial) indices for rangeshifter.
+  rstInitIndividuals <- rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0)
+  #plot(rstInitIndividuals)
+  dfInitialIndividuals <- extract(rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0), shpInitialIndividuals, cellnumbers=T, df=TRUE)
+  
+  # rangeshiftR requires a specific format for the individuals file, so add the required columns here,
+  # and convert 'cells' value to x/y, row/col values.
+  # as an example we are just initialising each cell with 100 individuals - we may need to adjust this later.
+  dfInitialIndividuals$Year <- 0
+  dfInitialIndividuals$Species <- 0
+  dfInitialIndividuals$X <- dfInitialIndividuals$cells %% ncol(rstHabitat)
+  dfInitialIndividuals$Y <- nrow(rstHabitat) - (floor(dfInitialIndividuals$cells / ncol(rstHabitat)))
+  
+  for (j in Ninds){
+    
+    #j <- Ninds[1]
+    
+    dfInitialIndividuals$Ninds <- j 
+    
+    dfInitialIndividuals <- dfInitialIndividuals[ , !(names(dfInitialIndividuals) %in% c('ID', 'cells', 'layer'))]
+    
+    # make sure individuals aren't being counted more than once in the same location (due to multiple tree id points)
+    dfInitialIndividuals <- unique(dfInitialIndividuals)
+    
+    write.table(dfInitialIndividuals, file.path(dirRsftrInput, paste0('initial_inds_',i,'_n',j,'.txt')), row.names = F, quote = F, sep = '\t')
+    
+  }
+  
+}
 
 # check
-shpInitialIndividuals <- st_as_sf(shpInitialIndividuals)
-ggplot(data = shpHabitat) +
-  geom_sf(aes(fill=suit),col=NA) +
-  geom_sf(data = shpInitialIndividuals)
 
-# need to rasterise then extract the species locations to get the xy, row/col (not spatial) indices for rangeshifter.
-rstInitIndividuals <- rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0)
-plot(rstInitIndividuals)
-dfInitialIndividuals <- extract(rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0), shpInitialIndividuals, cellnumbers=T, df=TRUE)
+init2012_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
+init2012_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
+init2014_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
+init2014_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
 
-# rangeshiftR requires a specific format for the individuals file, so add the required columns here,
-# and convert 'cells' value to x/y, row/col values.
-# as an example we are just initialising each cell with 100 individuals - we may need to adjust this later.
-dfInitialIndividuals$Year <- 0
-dfInitialIndividuals$Species <- 0
-dfInitialIndividuals$X <- dfInitialIndividuals$cells %% ncol(rstHabitat)
-dfInitialIndividuals$Y <- nrow(rstHabitat) - (floor(dfInitialIndividuals$cells / ncol(rstHabitat)))
-dfInitialIndividuals$Ninds <- 10 #100 # try reducing this to e.g. 10
-# 
-dfInitialIndividuals <- dfInitialIndividuals[ , !(names(dfInitialIndividuals) %in% c('ID', 'cells', 'layer'))]
-
-# make sure individuals aren't being counted more than once in the same location (due to multiple tree id points)
-dfInitialIndividuals <- unique(dfInitialIndividuals)
-
-write.table(dfInitialIndividuals, file.path(dirRsftrInput, 'initial_inds.txt'), row.names = F, quote = F, sep = '\t')
 
 #####
 # parameter set-up
