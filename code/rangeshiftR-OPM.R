@@ -4,6 +4,7 @@ library(rgdal)
 library(raster)
 library(RangeshiftR)
 library(sf)
+library(tidyverse)
 library(ggplot2)
 
 #wd <- "~/R/CRAFTY-OPM" # FR
@@ -16,7 +17,7 @@ dirData <- file.path(dirOut, 'for-rangeshiftR')
 # paths for folders required by rangeshiftR
 dirRsftr <- file.path(wd, 'rangeshiftR')
 dirRsftrInput <- file.path(dirRsftr,"Inputs")
-dirRsftrOuput <- file.path(dirRsftr,"Outputs")
+dirRsftrOutput <- file.path(dirRsftr,"Outputs")
 dirRsftrOutputMaps <- file.path(dirRsftr,"Output_Maps")
 dirRsftr <- file.path('C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshiftR/') # need to add the / for this path to work in RunRS
 #dir.create(dirRsftrInput)
@@ -55,12 +56,12 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 #}
 
 # read in and aggregate
-#rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
+rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
 #plot(rstHabitat)
 #rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
 #rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
 #rstMean <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=mean)
-#rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
+rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
 # need to decide whether to use fun=min or fun=max here. min underestimates a lot but max probably overestimates too much
 #plot(rstMin)
 #plot(rstMax)
@@ -69,12 +70,12 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 # doesn't overestimate and still picks up some smaller areas
 # but definitely loses smaller areas
 
-#rstHabitat <- rstModal
+rstHabitat <- rstModal
 
 # export as ascii file for RangeShifter.
 # be sure to specify -9999 as the no data value (NAflag argument)
 #writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
-rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)))
+#rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)))
 
 #####
 # species locations
@@ -151,19 +152,19 @@ for (i in years){
   
 }
 
-# check
 
-init2012_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
-init2012_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
-init2014_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
-init2014_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
+# check
+#init2012_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
+#init2012_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2012_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
+#init2014_n10 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n10.txt"), header = TRUE, sep = "\t", dec = ".",)
+#init2014_n75 <- read.delim(paste0(dirRsftrInput,"/initial_inds_2014_n75.txt"), header = TRUE, sep = "\t", dec = ".",)
 
 
 #####
 # parameter set-up
 #####
 # we need to simulate at least 2 years of rangeshiftR for each CRAFTY iteration.
-rangeshiftrYears <- 7
+rangeshiftrYears <- 10
 
 sim <- Simulation(Simulation = 1,
                   Years = rangeshiftrYears,
@@ -237,10 +238,10 @@ pop_df <- readPop(s, "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/rangeshift
 # full factorial design
 # https://www.r-bloggers.com/2009/12/design-of-experiments-–-full-factorial-designs/
 # http://www.lithoguru.com/scientist/statistics/DOE%20Factorial%20Design.R
-install.packages("AlgDesign")
+#install.packages("AlgDesign")
 library(AlgDesign)
 
-# The common 2^k design (two levels for each factor):
+# The common 2^k design (two levels for each factor e.g. high/low):
 df2 <- gen.factorial(levels = 2, nVars = 3, varNames=c("K","Rmax","Dispersal"))
 df2
 # the output is a data frame containing the factorial design
@@ -261,8 +262,7 @@ paramSens$Rmax[which(paramSens$R==1)] <- 20
 paramSens$Dispersal[which(paramSens$Dispersal==-1)] <- 600
 paramSens$Dispersal[which(paramSens$Dispersal==1)] <- 1000
 
-paramSens$occupied <- NA
-
+# test for loop to use each set of parameters in turn
 for (i in c(1:nrow(paramSens))){
   
   params <- paramSens[i,]
@@ -302,4 +302,91 @@ for (i in c(1:nrow(paramSens))){
   
   # extract N occupied cells in year 20?
   paramSens$occupied[expmt] <- range_df$NOccupCells[which(range_df$Year==20)]
+  
 }
+# seems to work!
+
+# now set up to run sensitivity analysis for a set of different initial individuals
+# list all init individual files
+
+individuals <- list.files(path = dirRsftrInput,
+                          pattern='initial_inds_.*\\.txt', recursive=TRUE,
+                          full.names = F)
+
+# for each initial individual file, run simulations with sensitivity testing
+# make sure sensible batch numbers or sub-folders
+
+dfSensitivity <- tibble(individuals)
+dfSensitivity <- tibble::rowid_to_column(dfSensitivity, "indID")
+
+paramSens <- tibble::rowid_to_column(paramSens, "paramID")
+library(mefa)
+paramSens <- rep(paramSens, times=16)
+paramSens$indID <- rep(1:16, each=8)
+
+dfSensitivity <- left_join(dfSensitivity,paramSens,by="indID")
+dfSensitivity$batch <- paste0(dfSensitivity$indID,dfSensitivity$paramID) # note. tried as decimal e.g. 1.1, 1.2 but RangeshiftR doesn't like it - unable to read range file later
+dfSensitivity$batch <- as.numeric(dfSensitivity$batch)
+
+dfSensitivity$occupied <- NA
+
+rangeshiftrYears <- 10
+
+for (i in c(1:nrow(dfSensitivity))){
+  
+  #params <- dfSensitivity[1,] #for testing
+  params <- dfSensitivity[i,] 
+
+  init <- Initialise(InitType=2, InitIndsFile=params[[2]])
+  
+  # set up parameters
+  expmt <- as.numeric(params[[7]])
+  sim <- Simulation(Simulation = expmt,
+                    Years = rangeshiftrYears,
+                    Replicates = 1,
+                    OutIntPop = 1,
+                    ReturnPopRaster=TRUE)
+  land <- ImportedLandscape(LandscapeFile=sprintf('Habitat-%sm.asc', habitatRes),
+                              Resolution=habitatRes,
+                              HabitatQuality=TRUE,
+                              K=params[[4]])
+  demo <- Demography(Rmax = params[[5]],
+                       ReproductionType = 0)
+  disp <-  Dispersal(Emigration = Emigration(EmigProb = 0.2),
+                       Transfer   = DispersalKernel(Distances = params[[6]]),
+                       Settlement = Settlement())
+  
+  # setup the simulation with the parameters defined above.
+  s <- RSsim(batchnum = expmt, simul = sim, land = land, demog = demo, dispersal = disp, init = init)
+  validateRSparams(s)
+  
+  result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
+  crs(result) <- crs(rstHabitat)
+  extent(result) <- extent(rstHabitat)
+  
+  # save results
+  writeRaster(result, paste0(dirRsftrOutputMaps,"/sensitivityResult_batch",params[[1]],"-",params[[3]],".tif"), options="INTERLEAVE=BAND", overwrite=TRUE)
+  
+  # read in range results
+  range_df <- readRange(s, sprintf('%s/', dirpath = dirRsftr))
+  
+  # extract N occupied cells in year 10?
+  dfSensitivity$occupied[expmt] <- range_df$NOccupCells[which(range_df$Year==10)]
+  
+}
+
+write.csv(dfSensitivity, paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_analysis.csv"),row.names = F)
+
+ggplot(dfSensitivity)+
+  geom_boxplot(aes(x=factor(individuals), y=occupied))+ 
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Number of occupied cells")
+
+dfSensitivityLong <- dfSensitivity %>% pivot_longer(cols = K:Dispersal, names_to = "Parameter", values_to = "Value")
+
+dfSensitivityLong$paramSens <- paste0(dfSensitivityLong$Parameter,"-",dfSensitivityLong$Value)
+
+ggplot(dfSensitivityLong)+
+  geom_col(aes(factor(paramSens),occupied, fill=Parameter))+
+  theme(axis.text.x = element_text(angle = 90))+
+  facet_wrap(~individuals)
