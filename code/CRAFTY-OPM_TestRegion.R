@@ -43,6 +43,7 @@ TestRegion <- TestRegion %>%
 ggplot(TestRegion)+
   geom_raster(aes(Long,Lat,fill=nature))
 
+
 # where 'type' is non-greenspace, mask out/remove from CRAFTY?
 
 TestRegion <- TestRegion %>%
@@ -51,6 +52,7 @@ TestRegion <- TestRegion %>%
 TestRegion %>%
   ggplot()+
   geom_tile(aes(Long,Lat,fill=type))
+
 
 #####
 # cell id and lat long
@@ -65,17 +67,17 @@ write.csv(ids, paste0(wd,"/data-processed/for-CRAFTY/Cell_ID_LatLong.csv"), row.
 
 # subtract minX from X and minY from Y
 
-xmin <- min(TestRegion$Long)
-ymin <- min(TestRegion$Lat)
+#xmin <- min(TestRegion$Long)
+#ymin <- min(TestRegion$Lat)
 
-TestRegion$X <- TestRegion$Long - xmin
-TestRegion$Y <- TestRegion$Lat - ymin
+#TestRegion$X <- TestRegion$Long - xmin
+#TestRegion$Y <- TestRegion$Lat - ymin
 
-TestRegion$X <- TestRegion$X / 1000
-TestRegion$Y <- round(TestRegion$Y / 1000, digits=2)
+#TestRegion$X <- TestRegion$X / 1000
+#TestRegion$Y <- round(TestRegion$Y / 1000, digits=2)
 
-ggplot(TestRegion)+
-  geom_tile(aes(X,Y,fill=type))
+#ggplot(TestRegion)+
+  #geom_tile(aes(X,Y,fill=type))
 
 
 #####
@@ -89,14 +91,29 @@ TestRegion$Agent <- "no_mgmt_NOPM"
 #####
 
 head(TestRegion)
-head(TestRegion[,c(1,13,14,15,10,6,8,9,2,3)])
-TestRegion <- TestRegion[,c(1,13,14,15,10,6,8,9,2,3)]
+head(TestRegion[,c(1,11,12,13,10,6,8,9,2,3)])
+TestRegion <- TestRegion[,c(1,11,12,13,10,6,8,9,2,3)]
 
 # make NAs 0 for CRAFTY?
 TestRegion[is.na(TestRegion)] <- 0
 
 TestRegion %>%
   ggplot()+
-  geom_tile(aes(X,Y,fill=riskPerc))
+  geom_tile(aes(Long,Lat,fill=riskPerc))
+
+write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/LondonBoroughs_latLong.csv"), row.names = F)
 
 write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/TestRegion.csv"), row.names = F)
+
+# round coordinates to 1 decimal place for CRAFTY
+TestRegion <- read.csv(paste0(wd,"/data-processed/for-CRAFTY/LondonBoroughs.csv"))
+summary(TestRegion$X)
+TestRegion$X <- round(TestRegion$X, digits=2)
+TestRegion$Y <- round(TestRegion$Y, digits=2)
+summary(TestRegion)
+TestRegion[,5:10] <- round(TestRegion[,5:10], digits = 2)
+summary (TestRegion)
+
+TestRegion <- tibble::rowid_to_column(TestRegion, "id")
+
+write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/LondonBoroughs.csv"), row.names = F)
