@@ -31,6 +31,15 @@ TestRegion <- merge(natural,social,by="joinID")
 TestRegion$OPMpresence <- 0
 
 #####
+# row and column ids for hex
+#####
+
+install.packages("hexbin")
+library(hexbin)
+
+
+
+#####
 # extract geometry into x and y
 #####
 
@@ -41,7 +50,17 @@ TestRegion <- TestRegion %>%
 
 # check plot
 ggplot(TestRegion)+
-  geom_raster(aes(Long,Lat,fill=nature))
+  geom_raster(aes(Long,Lat,fill=nature))+
+  coord_cartesian(xlim = c(525000, 527500),ylim = c(180000, 182500))
+# issues with gaps.
+# due to hexagonal grid.
+# have to re-do with regular grid?
+
+# rasterise
+library(raster)
+TRxyz <- TestRegion[,c(11,12,4)]
+rstTestRegion <- rasterFromXYZ(TRxyz)  #Convert first two columns as lon-lat and third as value                
+plot(rstTestRegion)
 
 
 # where 'type' is non-greenspace, mask out/remove from CRAFTY?
