@@ -365,7 +365,7 @@ for (i in c(1:nrow(dfSensitivity))){
   extent(result) <- extent(rstHabitat)
   
   # save results
-  writeRaster(result, paste0(dirRsftrOutputMaps,"/sensitivityResult_batch",params[[1]],"-",params[[3]],".tif"), options="INTERLEAVE=BAND", overwrite=TRUE)
+  writeRaster(result, paste0(dirRsftrOutputMaps,"/sensitivityResult_batch",params[[1]],"_",params[[3]],".tif"), options="INTERLEAVE=BAND", overwrite=TRUE)
   
   # read in range results
   range_df <- readRange(s, sprintf('%s/', dirpath = dirRsftr))
@@ -382,6 +382,12 @@ ggplot(dfSensitivity)+
   theme(axis.text.x = element_text(angle = 90))+
   ylab("Number of occupied cells")
 
+ggplot(dfSensitivity)+
+  geom_boxplot(aes(x=factor(Rmax), y=occupied, col=factor(Dispersal)))+ 
+  theme(axis.text.x = element_text(angle = 90))+
+  facet_wrap(~individuals)+
+  ylab("Number of occupied cells")
+
 dfSensitivityLong <- dfSensitivity %>% pivot_longer(cols = K:Dispersal, names_to = "Parameter", values_to = "Value")
 
 dfSensitivityLong$paramSens <- paste0(dfSensitivityLong$Parameter,"-",dfSensitivityLong$Value)
@@ -390,3 +396,25 @@ ggplot(dfSensitivityLong)+
   geom_col(aes(factor(paramSens),occupied, fill=Parameter))+
   theme(axis.text.x = element_text(angle = 90))+
   facet_wrap(~individuals)
+
+# have a look at maps
+
+files <- list.files(dirRsftrOutputMaps, full.names = T)
+files <- Filter(function(x) grepl("batch6", x), files) # 2013, 25 initial individuals per cell
+
+for(i in files) { 
+  #i <- files[1]
+  file <- unlist(strsplit(i, "[/]"))[8]
+  file <- substr(file, 1, nchar(file)-4)
+  file <- substr(file, 19,nchar(file))
+  assign(file, stack(i)) 
+  } 
+
+spplot(batch6_1)
+spplot(batch6_2)
+spplot(batch6_3)
+spplot(batch6_4)
+spplot(batch6_5)
+spplot(batch6_6)
+spplot(batch6_7)
+spplot(batch6_8)
