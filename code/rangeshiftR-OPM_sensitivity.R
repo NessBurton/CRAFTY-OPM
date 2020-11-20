@@ -5,7 +5,6 @@ library(raster)
 library(tidyverse)
 
 wd <- "~/CRAFTY-opm"# sandbox VM
-#setwd(wd)
 dirOut <- file.path(wd, 'data-processed')
 dirData <- file.path(dirOut, 'for-rangeshiftR') 
 
@@ -28,7 +27,7 @@ dfSensitivity$Rmax[which(dfSensitivity$Rmax==1)] <- 25 # from Synes et al. 2020 
 dfSensitivity$Dispersal[which(dfSensitivity$Dispersal==-1)] <- 800 # from Cowley et al. 2015
 dfSensitivity$Dispersal[which(dfSensitivity$Dispersal==1)] <- 1000 # higher option
 
-dfSensitivity <- tibble::rowid_to_column(dfSensitivity, "testID")
+dfSensitivity <- tibble::rowid_to_column(dfSensitivity, "ID")
 
 # ----------------------------------------------------
 # set up parameters
@@ -53,8 +52,8 @@ outRasterStack <- stack()
 # loop through
 for (i in c(1:nrow(dfSensitivity))) {
   
-  params <- dfSensitivity[2,] # test
-  #params <- dfSensitivity[i,] 
+  #params <- dfSensitivity[2,] # test
+  params <- dfSensitivity[i,] 
   ID <- params[[1]]
   
   sim <- Simulation(Simulation = ID,
@@ -62,7 +61,8 @@ for (i in c(1:nrow(dfSensitivity))) {
                     Replicates = 20,
                     OutIntPop = 1, 
                     OutIntInd = 1, 
-                    OutIntOcc = 1)
+                    OutIntOcc = 1,
+                    ReturnPopRaster = TRUE)
   
   land <- ImportedLandscape(LandscapeFile=sprintf('Habitat-%sm.asc', habitatRes),
                             Resolution=habitatRes,
@@ -78,27 +78,78 @@ for (i in c(1:nrow(dfSensitivity))) {
   
   s <- RSsim(simul = sim, land = land, demog = demo, dispersal = disp, init = init)
   
-  # run 
-  RunRS(s, sprintf('%s/',dirRsftr))
+  # run and store raster result
+  rstResult <- RunRS(s, sprintf('%s/',dirRsftr))
   
-  # read in population file
-  dfPop <- read.table(file.path(dirRsftrOutput, sprintf('Batch1_Sim%s_Land1_Pop.txt', ID)), header=TRUE)
+  # work out what i want from raster data
+  # average of replications per year?
+  
+  crs(rstResult) <- rstHabitat
+  extent(rstResult) <- rstHabitat
+  names(rstResult)
+  outRasterStack <- addLayer(outRasterStack, rstResult)
+  
+  #read in population file
+  #dfPop <- read.table(file.path(dirRsftrOutput, sprintf('Batch1_Sim%s_Land1_Pop.txt', ID)), header=TRUE)
   #dfPop <- subset(dfPop, Year == rangeshiftrYears-1)
   
-  # Make stack of different raster layers for each year and for only one repetition (Rep==0):
-  dfPop_rep0 <- reshape(subset(dfPop,Rep==0)[,c('Year','x','y','NInd')], timevar='Year', v.names=c('NInd'), idvar=c('x','y'), direction='wide')
+  #dfPop_summary <- dfPop %>% 
+    #filter(Year != 0) %>% 
+    #group_by(Year,x,y) %>% 
+    #summarise(NIndAvg = mean(NInd)) %>% 
+    #pivot_wider(id_cols = c("x","y"), names_from=Year, values_from=NIndAvg)
   
   # make a raster from the data frame
-  stack_years_rep0 <- rasterFromXYZ(dfPop_rep0)
-  #names(stack_years_rep0) <- c('Year.0', 'Year.50')
-  spplot(stack_years_rep0)#, zlim = c(0,7))
+  #stackYrs_allReps <- rasterFromXYZ(dfPop_summary)
+  #names(stackYrs_allReps) <- c('Year1', 'Year2', "Year3", "Year4", "Year5",
+   #                            "Year6", "Year7", "Year8", "Year9", "Year10")
+  # Not all years have the same number of populated and thus listed cells. For stacking, we set a common extent with the values used in the landscape module:
+  #ext <- extent(rstHabitat)
+  #if(sum(as.matrix(extent(stackYrs_allReps))!=as.matrix(ext)) == 0){ 
+    #stackYrs_allReps <- extend(stackYrs_allReps,ext)
+  #}
+    
+  #spplot(stackYrs_allReps)#, zlim = c(0,7))
+  #outRasterStack <- addLayer(outRasterStack, stackYrs_allReps)
 
-  
-  # Store RangeShiftR's population data in our output data frame.
+  # store population data in our output data frame.
   dfRange <- readRange(s, sprintf('%s/',dirRsftr))
   dfRange$ID <- ID
   dfRangeShiftrData <- rbind(dfRangeShiftrData, dfRange)
   
+  # occupancy
+  #dfOcc <- read.table(file.path(dirRsftrOutput, sprintf('Batch1_Sim%s_Land1_Occupancy_Stats.txt', ID)))
+  
 }
 
 View(dfRangeShiftrData)
+
+dfRangeShiftrData <- left_join(dfRangeShiftrData,dfSensitivity,by='ID')
+
+# look at effect of parameters (including all years, each with 20 reps)
+
+K_labs <- list('20'="K = 20",'50'="K = 50")
+K_labeller <- function(variable,value){
+  return(K_labs[value])
+}
+
+dfRangeShiftrData$K <- as.factor(dfRangeShiftrData$K)
+levels(dfRangeShiftrData$K)
+
+ggplot(dfRangeShiftrData)+
+  geom_boxplot(aes(x=factor(Rmax), y=NOccupCells, col=factor(Dispersal)))+ 
+  theme(axis.text.x = element_text(angle = 90))+
+  facet_wrap(~K, labeller = (K=K_labeller))+
+  ylab("Number of occupied cells")+xlab("Rmax")+
+  labs(col = "Dispersal")
+
+ggplot(dfRangeShiftrData)+
+  geom_boxplot(aes(x=factor(Rmax), y=Occup.Suit, col=factor(Dispersal)))+ 
+  theme(axis.text.x = element_text(angle = 90))+
+  facet_wrap(~factor(K))+
+  ylab("Occupancy")
+
+names(outRasterStack)
+# name based on ID from dfSensitivity table.
+# is it possible to group layers within raster stack and calculate average per year across all reps?
+# plot each with title showing parameter values
