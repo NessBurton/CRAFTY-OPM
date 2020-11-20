@@ -376,6 +376,7 @@ for (i in c(1:nrow(dfSensitivity))){
 }
 
 write.csv(dfSensitivity, paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_analysis.csv"),row.names = F)
+dfSensitivity <- read.csv(paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_analysis.csv"))
 
 ggplot(dfSensitivity)+
   geom_boxplot(aes(x=factor(individuals), y=occupied))+ 
