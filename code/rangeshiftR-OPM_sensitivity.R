@@ -29,6 +29,8 @@ dfSensitivity$Dispersal[which(dfSensitivity$Dispersal==1)] <- 1000 # higher opti
 
 dfSensitivity <- tibble::rowid_to_column(dfSensitivity, "ID")
 
+write.csv(dfSensitivity, paste0(dirOut,"/sensitivity_analysis_rangeshiftR/rsftr_parameters_2level_factorial.csv"))
+
 # ----------------------------------------------------
 # set up parameters
 
@@ -52,7 +54,7 @@ outRasterStack <- stack()
 # loop through
 for (i in c(1:nrow(dfSensitivity))) {
   
-  #params <- dfSensitivity[2,] # test
+  #params <- dfSensitivity[1,] # test
   params <- dfSensitivity[i,] 
   ID <- params[[1]]
   
@@ -86,31 +88,37 @@ for (i in c(1:nrow(dfSensitivity))) {
   
   crs(rstResult) <- rstHabitat
   extent(rstResult) <- rstHabitat
-  names(rstResult)
-  outRasterStack <- addLayer(outRasterStack, rstResult)
+  #names(rstResult)
   
-  #read in population file
-  #dfPop <- read.table(file.path(dirRsftrOutput, sprintf('Batch1_Sim%s_Land1_Pop.txt', ID)), header=TRUE)
-  #dfPop <- subset(dfPop, Year == rangeshiftrYears-1)
+  outRasterStack <- stack()
   
-  #dfPop_summary <- dfPop %>% 
-    #filter(Year != 0) %>% 
-    #group_by(Year,x,y) %>% 
-    #summarise(NIndAvg = mean(NInd)) %>% 
-    #pivot_wider(id_cols = c("x","y"), names_from=Year, values_from=NIndAvg)
-  
-  # make a raster from the data frame
-  #stackYrs_allReps <- rasterFromXYZ(dfPop_summary)
-  #names(stackYrs_allReps) <- c('Year1', 'Year2', "Year3", "Year4", "Year5",
-   #                            "Year6", "Year7", "Year8", "Year9", "Year10")
-  # Not all years have the same number of populated and thus listed cells. For stacking, we set a common extent with the values used in the landscape module:
-  #ext <- extent(rstHabitat)
-  #if(sum(as.matrix(extent(stackYrs_allReps))!=as.matrix(ext)) == 0){ 
-    #stackYrs_allReps <- extend(stackYrs_allReps,ext)
-  #}
+  for (j in c(0:9)){
     
-  #spplot(stackYrs_allReps)#, zlim = c(0,7))
-  #outRasterStack <- addLayer(outRasterStack, stackYrs_allReps)
+    #j <- 1
+    
+    annualReps <- subset(rstResult, grep(paste0("year",j), names(rstResult), value = T))
+    
+    annualMean <- calc(annualReps, fun = mean, na.rm=T)
+    #plot(annualMean)
+    names(annualMean) <- paste0("year.",j)
+    
+    outRasterStack <- addLayer(outRasterStack, annualMean)
+    outRasterStack
+    
+  }
+  
+  # same breaks for comparing between plots
+  #library(classInt)
+  #library(RColorBrewer)
+  breaks <- classIntervals(0:50, n=10, style="quantile",intervalClosure="right")
+  #pop.palette <- brewer.pal(n = 8, name = "YlGn")
+  
+  # save plot per sensitivity simulation
+  png(paste0("~/CRAFTY-opm/figures/rsftr_avgPop_20reps_dfSensitity_",ID,".png"), width = 800, height = 800)
+  #plot(outRasterStack, zlim=c(0,50), nc=5, nr = 2)
+  #print(spplot(outRasterStack, layout=c(5,2), at = breaks$brks))
+  print(spplot(outRasterStack, at=breaks$brks, zlim=c(0,50), layout=c(5,2)))
+  dev.off()
 
   # store population data in our output data frame.
   dfRange <- readRange(s, sprintf('%s/',dirRsftr))
@@ -123,8 +131,10 @@ for (i in c(1:nrow(dfSensitivity))) {
 }
 
 View(dfRangeShiftrData)
-
+summary(dfRangeShiftrData)
 dfRangeShiftrData <- left_join(dfRangeShiftrData,dfSensitivity,by='ID')
+
+write.csv(dfRangeShiftrData, paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_anaysis2.csv"))
 
 # look at effect of parameters (including all years, each with 20 reps)
 
@@ -148,8 +158,3 @@ ggplot(dfRangeShiftrData)+
   theme(axis.text.x = element_text(angle = 90))+
   facet_wrap(~factor(K))+
   ylab("Occupancy")
-
-names(outRasterStack)
-# name based on ID from dfSensitivity table.
-# is it possible to group layers within raster stack and calculate average per year across all reps?
-# plot each with title showing parameter values
