@@ -6,6 +6,7 @@ data-raw/
 rangeshiftR/
 data-processed/hexGrids/
 data-processed/hexClusters/
+data-processed/regGrid/
 data-processed/capitals/
 data-processed/oakTrees/
 data-processed/rasters/
