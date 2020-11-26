@@ -10,7 +10,8 @@ library(tmap)
 
 # file paths
 #wd <- "~/Documents/crafty-opm" # mac
-wd <- "~/R/CRAFTY-OPM" # FR
+#wd <- "~/R/CRAFTY-OPM" # FR
+wd <- "~/CRAFTY-opm"# sandbox VM
 dirData <- file.path(wd, 'data-raw')
 dirOut <- file.path(wd, 'data-processed')
 
@@ -18,18 +19,18 @@ dirOut <- file.path(wd, 'data-processed')
 hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
 
 # GiGL dataset (clipped to AOI and rasterised at 2m res in Arc)
-bio <- raster(paste0(dirOut,"/rastBHP2m.tif"))
+bio <- raster(paste0(dirOut,"/rasters/rastBHP2m.tif"))
 plot(bio)
 
 # OS open greenspace data
-access <- raster(paste0(dirOut,"/rstAccess2m.tif"))
+access <- raster(paste0(dirOut,"/rasters/rstAccess2m.tif"))
 plot(access)
 
 # extract values 
 # points need to be SpatialPoints
 hexPointsSP <- as_Spatial(hexPoints)
-hexPoints_bio <- extract(bio, hexPointsSP)
-hexPoints_access <- extract(access, hexPointsSP)
+hexPoints_bio <- raster::extract(bio, hexPointsSP)
+hexPoints_access <- raster::extract(access, hexPointsSP)
 hexPoints_access[which(is.na(hexPoints_access))] <- 0
 
 # combined
@@ -51,34 +52,36 @@ hexGrid <- st_as_sf(hexGrid)
 ggplot() +
   geom_sf(hexGrid, mapping = aes(fill = access), col = NA)
 
+summary(hexGrid)
 # write
 st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access.shp"))
 
+# leave normalisation for later when compiling all capitals - leave as raw for now
 # normalise bio values 0-1
-summary(hexGrid)
+#summary(hexGrid)
 
-data <- hexGrid$nature
-normalised <- (data-min(data))/(max(data)-min(data))
-hist(data)
-hist(normalised)
+#data <- hexGrid$nature
+#normalised <- (data-min(data))/(max(data)-min(data))
+#hist(data)
+#hist(normalised)
 
-hexGrid$nature <- normalised
+#hexGrid$nature <- normalised
 
-st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
+#st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
 
-hexGrid <- st_read(paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
+#hexGrid <- st_read(paste0(dirOut,"/capitals/hexG_bio_access_norm.shp"))
 
-library(viridis)
+#library(viridis)
 
-png(paste0(wd,"/figures/nature_capital.png"), width = 800, height = 800)
-ggplot() +
-  geom_sf(hexGrid, mapping = aes(fill = nature), col = NA)+
-  scale_fill_viridis()
-dev.off()
+#png(paste0(wd,"/figures/nature_capital.png"), width = 800, height = 800)
+#ggplot() +
+  #geom_sf(hexGrid, mapping = aes(fill = nature), col = NA)+
+  #scale_fill_viridis()
+#dev.off()
 
-png(paste0(wd,"/figures/access_capital.png"), width = 800, height = 800)
-ggplot() +
-  geom_sf(hexGrid, mapping = aes(fill = access), col = NA)+
-  scale_fill_viridis()
-dev.off()
+#png(paste0(wd,"/figures/access_capital.png"), width = 800, height = 800)
+#ggplot() +
+  #geom_sf(hexGrid, mapping = aes(fill = access), col = NA)+
+  #scale_fill_viridis()
+#dev.off()
 
