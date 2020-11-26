@@ -135,6 +135,7 @@ summary(dfRangeShiftrData)
 dfRangeShiftrData <- left_join(dfRangeShiftrData,dfSensitivity,by='ID')
 
 write.csv(dfRangeShiftrData, paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_anaysis2.csv"))
+dfRangeShiftrData <- read.csv(paste0(dirOut,"/sensitivity_analysis_rangeshiftR/df_Sensitivity_anaysis2.csv"))
 
 # look at effect of parameters (including all years, each with 20 reps)
 
@@ -158,3 +159,78 @@ ggplot(dfRangeShiftrData)+
   theme(axis.text.x = element_text(angle = 90))+
   facet_wrap(~factor(K))+
   ylab("Occupancy")
+
+
+# create test OPM presence for CRAFTY
+# i.e. run a single simulation
+# extract results per year to hexgrid points
+
+
+rstHabitat <- raster(file.path(dirRsftrInput, 'Habitat-2m.tif'))
+rasterizeRes <- 2
+habitatRes <- 100
+rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
+rstHabitat <- rstModal
+
+rangeshiftrYears <- 10
+
+init <- Initialise(InitType=2, InitIndsFile='initial_inds_2014_n25.txt')
+
+sim <- Simulation(Simulation = 3,
+                  Years = rangeshiftrYears,
+                  Replicates = 1,
+                  OutIntPop = 1, # interval for output of population data
+                  OutIntInd = 1, # interval for output of individual data
+                  ReturnPopRaster=TRUE) 
+
+land <- ImportedLandscape(LandscapeFile=sprintf('Habitat-%sm.asc', habitatRes),
+                          Resolution=habitatRes,
+                          HabitatQuality=TRUE,
+                          K=50) # carrying capacity (individuals per hectare) when habitat at 100% quality
+
+demo <- Demography(Rmax = 25,
+                   ReproductionType = 0) # 0 = asexual / only female; 1 = simple sexual; 2 = sexual model with explicit mating system
+
+disp <-  Dispersal(Emigration = Emigration(EmigProb = 0.2),
+                   Transfer   = DispersalKernel(Distances = 1500), # test getting to top of landscape while keeping other params low
+                   Settlement = Settlement() )
+
+# Setup the simulation with the parameters defined above.
+s <- RSsim(simul = sim, land = land, demog = demo, dispersal = disp, init = init)
+validateRSparams(s)
+
+# run simulation
+result <- RunRS(s, sprintf('%s/', dirpath = dirRsftr))
+crs(result) <- crs(rstHabitat)
+extent(result) <- extent(rstHabitat)
+plot(result[[10]])
+spplot(result)
+
+# extract each year to hex points
+# make sure ones for CRAFTY with non-greenspace filtered out
+
+hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
+hexPointsSP <- as_Spatial(hexPoints)
+
+hexPointsOPM <- raster::extract(result, hexPointsSP)
+
+hexPointsOPM <- cbind(hexPointsSP,hexPointsOPM)
+
+# join to hexagons
+hexGrid <- st_read(paste0(dirOut,"/hexGrids/hexGrid40m_types2.shp"))
+hexGrid <- as.data.frame(hexGrid)
+hexGrid <- merge(hexGrid, hexPointsOPM, by="joinID")
+hexGrid <- st_as_sf(hexGrid)
+
+# check
+hexGrid %>% 
+  filter(type != "Non.greenspace") %>% 
+  ggplot() +
+  geom_sf(mapping = aes(fill = rep0_year5), col = NA)
+
+head(hexGrid[,c(1,21:31)])
+
+hexGrid <- hexGrid[,c(1,21:31)] %>% 
+  st_drop_geometry()
+
+write.csv(hexGrid, paste0(dirOut,"/hexGrids/hexG_rangeshiftR_test.csv"))
