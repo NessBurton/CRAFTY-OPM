@@ -34,8 +34,8 @@ TestRegion$OPMpresence <- 0
 # row and column ids for hex
 #####
 
-install.packages("hexbin")
-library(hexbin)
+#install.packages("hexbin")
+#library(hexbin)
 
 
 
