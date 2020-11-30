@@ -169,8 +169,12 @@ ggplot() +
 # modelled median household income from London Atlas
 # https://data.london.gov.uk/dataset/london-borough-profiles  
 # include lowest median value (newham) and highest (city of london) to allow the data to be normalised
-boroughs <- c("newham","camden","westminster","kensington","hammersmith","city")
-income <- c(28780,43750,47510,55620,43820,63620)
+#boroughs <- c("newham","camden","westminster","kensington","hammersmith","city")
+#income <- c(28780,43750,47510,55620,43820,63620)
+# remove highest and lowesr boroughs, just use values from 4
+# after disc. with calum, need budget to be 0-1 to be as 'powerful' as other capitals
+boroughs <- c("camden","westminster","kensington","hammersmith")
+income <- c(43750,47510,55620,43820)
 household.income <- as.data.frame(cbind(boroughs,income))
 household.income$income <- as.numeric(household.income$income)
 household.income$rank <- rank(-household.income$income)
@@ -204,6 +208,6 @@ ggplot() +
 
 #hexSocial$knowledge <- 0
 
-# last written to file 26/11/20
+# last written to file 30/11/20
 st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
 
