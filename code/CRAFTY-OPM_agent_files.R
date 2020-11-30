@@ -17,14 +17,15 @@ agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
 # no management
 Service <- c("biodiversity","recreation","management")
 Production <- c(1,1,0) # if no OPM, assume maximum amount of Services can be produced (excl. management)
-OPMpresence <- c(0,0,0) # no reliance on opm presence
+OPMpresence <- c(0,0,0) # not reliant on OPM presence to appear
+OPMinverted <- c(1,1,0) # but if OPM present and unable to manage, bio and recreation provision compromised
 riskPerc <- c(0,0,0) # no reliance on risk perception
 budget <- c(0,0,0) # no reliance on budget
 knowledge <- c(0,0,0) # no reliance on knowledge
 nature <- c(1,0,0) # Production of biodiversity fully reliant on nature capital level, 1:1
 access <- c(0,1,0) # Production of recreation fully reliant on access capital level, 1:1
 
-no.mgmt <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+no.mgmt <- tibble(Service,OPMpresence,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 
 # no management (unable)
@@ -44,39 +45,42 @@ write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 Service <- c("biodiversity","recreation","management")
 Production <- c(0.9,0.6,0.8) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
 OPMpresence <- c(0,0,1) # should only appear/manage when OPM is present 
+OPMinverted <- c(0,0,0)
 riskPerc <- c(0,0,0.2) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(0,0,0.2) # some budget required
 knowledge <- c(0,0,0.8) # management requires knowledge
 nature <- c(1,0,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1,0) # Production of recreation dependent on access capital
 
-mgmt.low <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+mgmt.low <- tibble(Service,OPMpresence,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # manage (med intensity)
 Service <- c("biodiversity","recreation","management")
 Production <- c(0.6,0.6,0.9) # attempting balance of objectives
 OPMpresence <- c(0,0,1) # should only appear when OPM is present 
+OPMinverted <- c(0,0,0)
 riskPerc <- c(0,0,0.5) # medium risk perception
 budget <- c(0,0,0.5) # requires more budget for spraying etc. 
 knowledge <- c(0,0,0.8) # management requires knowledge
 nature <- c(1,0,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1,0) # Production of recreation dependent on access capital
 
-mgmt.med <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+mgmt.med <- tibble(Service,OPMpresence,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"), row.names=F)
 
 # manage (high intensity)
 Service <- c("biodiversity","recreation","management")
 Production <- c(0.5,0.9,1) # focus is on reducing risk to public health and allowing continued access
 OPMpresence <- c(0,0,1) # should only appear when OPM is present 
+OPMinverted <- c(0,0,0)
 riskPerc <- c(0,0,1) # this kind of management only possible where risk perceptions...
 budget <- c(0,0,1) # and budget are high
 knowledge <- c(0,0,0.8) # management requires knowledge
 nature <- c(1,0,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1,0) # Production of recreation dependent on access capital
 
-mgmt.high <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+mgmt.high <- tibble(Service,OPMpresence,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
 
 
@@ -150,8 +154,8 @@ write.csv(params4, paste0(agentFilepath,"AftParams_mgmt_highInt.csv"), row.names
 ##### Also capitals, Services index tables, + demand
 
 # Capitals
-Name <- c("OPMpresence","riskPerc","budget","knowledge","nature","access")
-Index <- c(0,1,2,3,4,5)
+Name <- c("OPMpresence","OPMinverted","riskPerc","budget","knowledge","nature","access")
+Index <- c(0,1,2,3,4,5,6)
 Capitals <- tibble(Name,Index)
 write.csv(Capitals, paste0(agentFilepath,"Capitals.csv"), row.names=F)
 
