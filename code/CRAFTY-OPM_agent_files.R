@@ -12,7 +12,9 @@ agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
 # define Production levels for Services (0-1, low-high)
 # and sensitivity of Production to each capital (0-1, low-high)
 
-# no management (no OPM)
+# V2 - change to just 1 no management agents, tweak sensitivities and production
+
+# no management
 Service <- c("biodiversity","recreation","management")
 Production <- c(1,1,0) # if no OPM, assume maximum amount of Services can be produced (excl. management)
 OPMpresence <- c(0,0,0) # no reliance on opm presence
@@ -22,26 +24,26 @@ knowledge <- c(0,0,0) # no reliance on knowledge
 nature <- c(1,0,0) # Production of biodiversity fully reliant on nature capital level, 1:1
 access <- c(0,1,0) # Production of recreation fully reliant on access capital level, 1:1
 
-no.mgmt.no.opm <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
-write.csv(no.mgmt.no.opm, paste0(agentFilepath,"no_mgmt_NOPM.csv"), row.names=F)
+no.mgmt <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 
 # no management (unable)
-Service <- c("biodiversity","recreation","management")
-Production <- c(0.4,0.4,0) # if OPM present but no management, Service provision compromised
-OPMpresence <- c(1,1,1) # should only appear when OPM is present 
-riskPerc <- c(0,0,0) # no reliance
-budget <- c(0,0,0) # no reliance 
-knowledge <- c(0,0,0) # no reliance
-nature <- c(1,0,0) # Production of biodiversity dependent on nature capital
-access <- c(0,1,0) # Production of recreation dependent on access capital
+#Service <- c("biodiversity","recreation","management")
+#Production <- c(0.4,0.4,0) # if OPM present but no management, Service provision compromised
+#OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+#riskPerc <- c(0,0,0) # no reliance
+#budget <- c(0,0,0) # no reliance 
+#knowledge <- c(0,0,0) # no reliance
+#nature <- c(1,0,0) # Production of biodiversity dependent on nature capital
+#access <- c(0,1,0) # Production of recreation dependent on access capital
 
-no.mgmt.unable <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
-write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"), row.names=F)
+#no.mgmt.unable <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
+#write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"), row.names=F)
 
 # manage (low intensity)
 Service <- c("biodiversity","recreation","management")
-Production <- c(1,0.6,1) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
-OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+Production <- c(0.9,0.6,0.8) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
+OPMpresence <- c(0,0,1) # should only appear/manage when OPM is present 
 riskPerc <- c(0,0,0.2) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(0,0,0.2) # some budget required
 knowledge <- c(0,0,0.8) # management requires knowledge
@@ -53,8 +55,8 @@ write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # manage (med intensity)
 Service <- c("biodiversity","recreation","management")
-Production <- c(0.6,0.6,1) # attempting balance of objectives
-OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+Production <- c(0.6,0.6,0.9) # attempting balance of objectives
+OPMpresence <- c(0,0,1) # should only appear when OPM is present 
 riskPerc <- c(0,0,0.5) # medium risk perception
 budget <- c(0,0,0.5) # requires more budget for spraying etc. 
 knowledge <- c(0,0,0.8) # management requires knowledge
@@ -66,8 +68,8 @@ write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"), row.names=F)
 
 # manage (high intensity)
 Service <- c("biodiversity","recreation","management")
-Production <- c(0.5,1,1) # focus is on reducing risk to public health and allowing continued access
-OPMpresence <- c(1,1,1) # should only appear when OPM is present 
+Production <- c(0.5,0.9,1) # focus is on reducing risk to public health and allowing continued access
+OPMpresence <- c(0,0,1) # should only appear when OPM is present 
 riskPerc <- c(0,0,1) # this kind of management only possible where risk perceptions...
 budget <- c(0,0,1) # and budget are high
 knowledge <- c(0,0,0.8) # management requires knowledge
@@ -88,10 +90,23 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/%s/no_mgmt_NOPM.csv"
+productionCsvFile <- ".//production/no_mgmt.csv"
 params0 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-write.csv(params0, paste0(agentFilepath,"AftParams_no_mgmt_NOPM.csv"), row.names=F)
+write.csv(params0, paste0(agentFilepath,"AftParams_no_mgmt.csv"), row.names=F)
+
+#aftParamId <- 0
+#givingInDistributionMean <- 0
+#givingInDistributionSD <- 0
+#givingUpDistributionMean <- 0
+#givingUpDistributionSD <- 0
+#serviceLevelNoiseMin <- 1
+#serviceLevelNoiseMax <- 1
+#givingUpProb <- 0
+#productionCsvFile <- ".//production/%s/no_mgmt_unable.csv"
+#params1 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
+ #                 serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
+#write.csv(params1, paste0(agentFilepath,"AftParams_no_mgmt_unable.csv"), row.names=F)
 
 aftParamId <- 0
 givingInDistributionMean <- 0
@@ -101,20 +116,7 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/%s/no_mgmt_unable.csv"
-params1 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
-                  serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-write.csv(params1, paste0(agentFilepath,"AftParams_no_mgmt_unable.csv"), row.names=F)
-
-aftParamId <- 0
-givingInDistributionMean <- 0
-givingInDistributionSD <- 0
-givingUpDistributionMean <- 0
-givingUpDistributionSD <- 0
-serviceLevelNoiseMin <- 1
-serviceLevelNoiseMax <- 1
-givingUpProb <- 0
-productionCsvFile <- ".//production/%s/mgmt_lowInt.csv"
+productionCsvFile <- ".//production/mgmt_lowInt.csv"
 params2 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
 write.csv(params2, paste0(agentFilepath,"AftParams_mgmt_lowInt.csv"), row.names=F)
@@ -127,7 +129,7 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/%s/mgmt_medInt.csv"
+productionCsvFile <- ".//production/mgmt_medInt.csv"
 params3 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
 write.csv(params3, paste0(agentFilepath,"AftParams_mgmt_medInt.csv"), row.names=F)
@@ -140,7 +142,7 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/%s/mgmt_highInt.csv"
+productionCsvFile <- ".//production/mgmt_highInt.csv"
 params4 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
 write.csv(params4, paste0(agentFilepath,"AftParams_mgmt_highInt.csv"), row.names=F)
