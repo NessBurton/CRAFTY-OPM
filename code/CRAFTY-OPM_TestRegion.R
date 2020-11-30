@@ -7,7 +7,7 @@ library(tidyverse)
 library(ggplot2)
 library(sf)
 
-wd <- "C:/Users/vanessa.burton/OneDrive - Forest Research/Documents/R/CRAFTY-OPM"
+#wd <- "C:/Users/vanessa.burton/OneDrive - Forest Research/Documents/R/CRAFTY-OPM"
 wd <- "~/CRAFTY-opm" # sandbox VM
 
 #####
