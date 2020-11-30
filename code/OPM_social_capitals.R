@@ -50,6 +50,8 @@ ggplot()+
 # new risk perception variable
 hexSocial$riskPerc <- NA 
 
+# CAN SKIP RE_DOING THIS AND GO TO LINE 155
+#####
 # start test with private gardens
 # 16% strongly agree OPM is a risk - value = 1
 # 54% agree - value = 0.8
@@ -149,6 +151,7 @@ ggplot()+
 
 # last written to file 28/10/20
 st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
+#####
 hexSocial <- st_read(paste0(dirOut,"/capitals/hexG_social.shp"))
 
 ##### Budget
@@ -190,17 +193,17 @@ hexSocial$budget[which(hexSocial$borough=="kensington")] <- household.income$inc
 hexSocial$budget[which(hexSocial$borough=="hammersmith")] <- household.income$income.norm[which(household.income$boroughs=="hammersmith")]
 
 library(viridis)
-png(paste0(wd,"/figures/budget_capital.png"), width = 800, height = 800)
+#png(paste0(wd,"/figures/budget_capital.png"), width = 800, height = 800)
 ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = budget), col = NA)+
   scale_fill_viridis()
-dev.off()
+#dev.off()
 
 
 ##### Knowledge - empty column for now, will rely on OPM presence
 
-hexSocial$knowledge <- 0
+#hexSocial$knowledge <- 0
 
-# last written to file 11/11/20
+# last written to file 26/11/20
 st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
 
