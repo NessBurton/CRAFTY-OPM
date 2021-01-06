@@ -178,8 +178,9 @@ write.csv(Services, paste0(agentFilepath,"Services.csv"), row.names=F)
 # run CRAFTY for a single timestep and use biodiversity and recreation supply values as initial demand
 # set management demand relative to the values for bio and rec - but higher so that it takes priority
 Year <- 1
-biodiversity <- 11361.905 # inital value used for first run 1000
-recreation <- 7171.946 # inital value used for first run 1000
+biodiversity <- 12000 # inital supply V4 = 11,412
+recreation <- 8000 # inital supply V4 = 7,224
+# increase initial demand to see if it drives change
 #management <- 12000 # set so that it is higher than bio, taking priority
 Demand <- tibble(Year,biodiversity,recreation)
 write.csv(Demand, paste0(agentFilepath,"Demand.csv"), row.names=F)
