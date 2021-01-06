@@ -8,6 +8,9 @@ dirCRAFTY <- "C:/Users/vanessa.burton.sb/Documents/eclipse-workspace/CRAFTY_Rang
 dirOut <- paste0(dirCRAFTY, "output")
 setwd(dirCRAFTY)
 
+# figure directory
+dirFigs <- "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/figures/"
+
 # read in all results ----------------------------------------------------------
 
 dfResults <-
@@ -29,6 +32,9 @@ dfResults$Agent <- factor(dfResults$Agent)
 invert <- dfResults$Capital.OPMinverted - 1
 z <- abs(invert)
 dfResults$OPMpresence <- z
+# check OPM values/distribution
+summary(dfResults$OPMpresence)
+hist(dfResults$OPMpresence[which(dfResults$OPMpresence!=0)])
 
 # bar plot agents --------------------------------------------------------------
 
@@ -113,13 +119,17 @@ ggplot() +
 # facet plots
 
 sfResult_lg <- pivot_longer(sfResult, cols = 6:7, names_to = "service", values_to = "provision") %>%
-  pivot_longer(., cols=6:11, names_to="capital", values_to="level") %>% 
+  pivot_longer(., cols=c(7:11,14), names_to="capital", values_to="level") %>% 
   st_as_sf()
+
 # plot capital levels
+#png(paste0(dirFigs,"capitals_V4_tick10.png"), units="cm", width = 20, height = 18, res=500)
 ggplot(sfResult_lg) +
   geom_sf(mapping = aes(fill = level), col = NA)+
   scale_fill_viridis()+
   facet_wrap(~capital)
+#dev.off()
+
 # plot service provision
 ggplot(sfResult_lg) +
   geom_sf(mapping = aes(fill = provision), col = NA)+
