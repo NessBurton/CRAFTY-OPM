@@ -1,5 +1,8 @@
 
 library(tidyverse)
+library(foreach)
+library(sf)
+library(viridis)
 
 dirCRAFTY <- "C:/Users/vanessa.burton.sb/Documents/eclipse-workspace/CRAFTY_RangeshiftR/"
 dirOut <- paste0(dirCRAFTY, "output")
@@ -7,33 +10,119 @@ setwd(dirCRAFTY)
 
 # read in all results ----------------------------------------------------------
 
-results <-
+dfResults <-
   list.files(path = "./output/",
              pattern = "*.csv", 
              full.names = T) %>% 
   grep("-Cell-", value=TRUE, .) %>% 
-  map_df(~read_csv(., col_types = cols(.default = "c")))
+  #map_df(~read_csv(., col_types = cols(.default = "c")))
+  map_df(~read.csv(.))
+
+head(dfResults)
+summary(dfResults)
+dfResults$Tick <- factor(dfResults$Tick)
+dfResults$Agent <- factor(dfResults$Agent)
+
+# undo OPM inversion -----------------------------------------------------------
+
+# inverted OPM presence capital 
+invert <- dfResults$Capital.OPMinverted - 1
+z <- abs(invert)
+dfResults$OPMpresence <- z
+
+# bar plot agents --------------------------------------------------------------
+
+agentSummary <- dfResults %>% 
+  group_by(Tick,Agent) %>% 
+  summarise(agentCount = length(Agent))
+
+agentSummary %>% 
+  #filter(Agent != "no_mgmt") %>% 
+  ggplot()+
+  geom_col(aes(x=Tick,y=agentCount, fill=Agent), position = "stack")#+
+  #facet_wrap(~Tick)
+
+# plot service provision through time ------------------------------------------
+
+serviceSummary <- dfResults %>% 
+  group_by(Tick,Agent) %>% 
+  #group_by(Tick) %>% 
+  summarise(biodiversity = mean(Service.biodiversity),
+            recreation = mean(Service.recreation)) %>% 
+  pivot_longer(., cols=3:4, names_to="service",values_to="provision")
+
+serviceSummary$Tick <- as.numeric(as.character(serviceSummary$Tick))
+
+serviceSummary %>% 
+  ggplot()+
+  geom_line(aes(x=Tick,y=provision,col=Agent))+
+  facet_wrap(~service)
+
+# plot capital levels through time ---------------------------------------------
+
+capitalSummary <- dfResults %>% 
+  group_by(Tick,Agent) %>% 
+  #group_by(Tick) %>% 
+  summarise(OPM = mean(OPMpresence),
+            riskPerc = mean(Capital.riskPerc),
+            budget = mean(Capital.budget),
+            knowledge = mean(Capital.knowledge),
+            nature = mean(Capital.nature),
+            access = mean(Capital.access)) %>% 
+  pivot_longer(., cols=3:8, names_to="capital",values_to="level")
+
+capitalSummary$Tick <- as.numeric(as.character(capitalSummary$Tick))
+
+capitalSummary %>% 
+  ggplot()+
+  geom_line(aes(x=Tick,y=level,col=capital))+
+  facet_wrap(~Agent)
+
+# plot competitiveness through time --------------------------------------------
+
+AFTcomp <- read.csv(paste0(dirOut,"/Baseline-0-99-LondonBoroughs-AggregateAFTCompetitiveness.csv"))
 
 # match back to hex grid -------------------------------------------------------
 
-cellIDs <- read.csv(paste0(dirCRAFTY,"data-processed/Cell_ID_XY_Borough.csv"))
 hexGrid <- st_read(paste0(dirCRAFTY,"data-processed/hexgrids/hexGrid40m.shp"))
+london_xy_df <- read.csv(paste0(dirCRAFTY,"data-processed/Cell_ID_XY_Borough.csv"))
+tick10 <- filter(dfResults, Tick==10)
+val_xy <- data.frame(tick10$X,tick10$Y)
+colnames(val_xy) <- c("X", "Y")
+x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
 
-hexGrid %>%
-  mutate(Long = st_coordinates(st_centroid(.))[,1],
-         Lat = st_coordinates(st_centroid(.))[,2]) %>% 
-  st_drop_geometry()
+cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+}
 
-results$joinID  = cellIDs$Cell_ID[match(results$X, cellIDs$X)]
-
-results$geometry  = hexGrid$geometry[match(results$joinID, hexGrid$geometry)]
-
-results2 <- filter(results, Tick==2020)
-test <- merge(hexGrid, results2, by='joinID')
+tick10$joinID <- cellid
+sfResult <- left_join(hexGrid, tick10, by="joinID")
 
 # plot -------------------------------------------------------------------------
 
-ggplot(results)+
-  #geom_raster(aes(X,Y,fill=Agent))+
-  geom_bar(aes(Agent, fill=Agent))+
-  facet_wrap(~Tick)
+ggplot() +
+  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)
+ggplot() +
+  geom_sf(sfResult, mapping = aes(fill = Capital.OPMinverted), col = NA)+
+  scale_fill_viridis()
+ggplot() +
+  geom_sf(sfResult, mapping = aes(fill = OPMpresence), col = NA)+
+  scale_fill_viridis()
+
+# facet plots
+
+sfResult_lg <- pivot_longer(sfResult, cols = 6:7, names_to = "service", values_to = "provision") %>%
+  pivot_longer(., cols=6:11, names_to="capital", values_to="level") %>% 
+  st_as_sf()
+# plot capital levels
+ggplot(sfResult_lg) +
+  geom_sf(mapping = aes(fill = level), col = NA)+
+  scale_fill_viridis()+
+  facet_wrap(~capital)
+# plot service provision
+ggplot(sfResult_lg) +
+  geom_sf(mapping = aes(fill = provision), col = NA)+
+  scale_fill_viridis()+
+  facet_wrap(~service)
+
