@@ -14,19 +14,23 @@ agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
 
 # V2 - change to just 1 no management agents, tweak sensitivities and production
 # V3 - remove medium intensity agent, remove management service
+# V4 - remove sensitivity of no management agent to risk perception/budget/knowledge
+#      1:1 service production might be making dynamics harder to control. Test going back to changing production levels for low and high intensity management agents
+
 
 # no management
 Service <- c("biodiversity","recreation")
 Production <- c(1,1) # if no OPM, assume maximum amount of Services can be produced
 #OPMpresence <- c(0,0) # not relianct on presence
 OPMinverted <- c(0.9,0.9) # but if OPM present and unable to manage, bio and recreation provision compromised maximum amount
-riskPerc <- c(0.2,0.2) # no reliance on risk perception
-budget <- c(0.2,0.2) # no reliance on budget
-knowledge <- c(0.2,0.2) # no reliance on knowledge
+riskPerc <- c(0,0) # no reliance on risk perception
+budget <- c(0,0) # no reliance on budget
+knowledge <- c(0,0) # no reliance on knowledge
 nature <- c(1,0) # Production of biodiversity fully reliant on nature capital level, 1:1
 access <- c(0,1) # Production of recreation fully reliant on access capital level, 1:1
 
 no.mgmt <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
+view(no.mgmt)
 write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 
 # no management (unable)
@@ -44,9 +48,9 @@ write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 
 # manage (low intensity)
 Service <- c("biodiversity","recreation")
-Production <- c(1,1) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
+Production <- c(1,0.5) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
 #OPMpresence <- c(1,1) # should only appear/manage when OPM is present 
-OPMinverted <- c(0.5,0.5)
+OPMinverted <- c(0.6,0.6) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(0.5,0.5) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(0.5,0.5) # some budget required
 knowledge <- c(0.8,0.8) # management requires knowledge
@@ -54,6 +58,7 @@ nature <- c(1,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1) # Production of recreation dependent on access capital
 
 mgmt.low <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
+view(mgmt.low)
 write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # remove this agent for now
@@ -73,9 +78,9 @@ write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # manage (high intensity)
 Service <- c("biodiversity","recreation")
-Production <- c(1,1) # focus is on reducing risk to public health and allowing continued access
+Production <- c(0.5,1) # focus is on reducing risk to public health and allowing continued access
 #OPMpresence <- c(1,1) # should only appear when OPM is present 
-OPMinverted <- c(0.2,0.2)
+OPMinverted <- c(0.3,0.3) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(1,1) # this kind of management only possible where risk perceptions...
 budget <- c(1,1) # and budget are high
 knowledge <- c(0.8,0.8) # management requires knowledge
@@ -83,6 +88,7 @@ nature <- c(1,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1) # Production of recreation dependent on access capital
 
 mgmt.high <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
+view(mgmt.high)
 write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
 
 
