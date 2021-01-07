@@ -14,7 +14,8 @@ library(tictoc) # for timing
 
 # file paths
 #wd <- "~/Documents/crafty-opm" # mac
-wd <- "~/R/CRAFTY-OPM" # FR
+#wd <- "~/R/CRAFTY-OPM" # FR
+wd <- "~/CRAFTY-opm" # sandbox
 dirData <- file.path(wd, 'data-raw')
 dirOut <- file.path(wd, 'data-processed')
 
