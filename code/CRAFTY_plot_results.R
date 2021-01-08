@@ -108,7 +108,8 @@ sfResult <- left_join(hexGrid, tick1, by="joinID")
 # plot -------------------------------------------------------------------------
 
 ggplot() +
-  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)
+  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)+
+  scale_fill_brewer(palette="Dark2")
 ggplot() +
   geom_sf(sfResult, mapping = aes(fill = Capital.OPMinverted), col = NA)+
   scale_fill_viridis()
@@ -136,6 +137,62 @@ png(paste0(dirFigs,"services_V4_tick1.png"), units="cm", width = 20, height = 18
 ggplot(sfResult_lg) +
   geom_sf(mapping = aes(fill = provision), col = NA)+
   scale_fill_viridis()+
-  facet_wrap(~service)
+  facet_wrap(~service)+
+  theme_minimal()
 dev.off()
 
+# plot agents at 3 timesteps
+#brewer.pal(3, name = "Dark2")
+agent.pal <- c("no_mgmt" = "grey",
+               "mgmt_lowInt" = "#1B9E77",
+               "mgmt_highInt" = "#D95F02")
+
+# tick 1
+png(paste0(dirFigs,"agents_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
+ggplot() +
+  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)+
+  scale_fill_manual(values=agent.pal)+
+  theme_minimal()
+dev.off()
+
+tick5 <- filter(dfResults, Tick==5)
+val_xy <- data.frame(tick5$X,tick5$Y)
+colnames(val_xy) <- c("X", "Y")
+x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+
+cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+}
+
+tick5$joinID <- cellid
+sfTick5 <- left_join(hexGrid, tick5, by="joinID")
+
+# tick 5
+png(paste0(dirFigs,"agents_V4_tick5.png"), units="cm", width = 20, height = 18, res=1000)
+ggplot() +
+  geom_sf(sfTick5, mapping = aes(fill = Agent), col = NA)+
+  scale_fill_manual(values=agent.pal)+
+  theme_minimal()
+dev.off()
+
+tick10 <- filter(dfResults, Tick==10)
+val_xy <- data.frame(tick10$X,tick10$Y)
+colnames(val_xy) <- c("X", "Y")
+x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+
+cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+}
+
+tick10$joinID <- cellid
+sfTick10 <- left_join(hexGrid, tick10, by="joinID")
+
+# tick 5
+png(paste0(dirFigs,"agents_V4_tick10.png"), units="cm", width = 20, height = 18, res=1000)
+ggplot() +
+  geom_sf(sfTick10, mapping = aes(fill = Agent), col = NA)+
+  scale_fill_manual(values=agent.pal)+
+  theme_minimal()
+dev.off()
