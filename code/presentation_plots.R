@@ -73,3 +73,20 @@ ggmap(map) +
   ylab("")+xlab("")
 dev.off()
 
+
+# greenspace maps --------------------------------------------------------------
+
+sfGspace <- st_read(paste0(dirData,"/OSMM_greenspace/OSMM_gspaceAOI.shp"))
+
+#png(paste0(dirFigs,"greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
+ggplot(sfGspace)+
+  geom_sf(aes(fill=priFunc), col=NA)
+#dev.off()
+
+hexGspace <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"))
+
+#png(paste0(dirFigs,"hex_greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
+ggplot() +
+  geom_sf(hexGspace, mapping = aes(fill = type), col = NA)+
+  scale_fill_manual(values=type.pal)
+#dev.off()
