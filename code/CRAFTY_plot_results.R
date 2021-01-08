@@ -92,8 +92,8 @@ AFTcomp <- read.csv(paste0(dirOut,"/Baseline-0-99-LondonBoroughs-AggregateAFTCom
 
 hexGrid <- st_read(paste0(dirCRAFTY,"data-processed/hexgrids/hexGrid40m.shp"))
 london_xy_df <- read.csv(paste0(dirCRAFTY,"data-processed/Cell_ID_XY_Borough.csv"))
-tick10 <- filter(dfResults, Tick==10)
-val_xy <- data.frame(tick10$X,tick10$Y)
+tick1 <- filter(dfResults, Tick==1)
+val_xy <- data.frame(tick1$X,tick1$Y)
 colnames(val_xy) <- c("X", "Y")
 x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
 y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
@@ -102,8 +102,8 @@ cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% {
   which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
 }
 
-tick10$joinID <- cellid
-sfResult <- left_join(hexGrid, tick10, by="joinID")
+tick1$joinID <- cellid
+sfResult <- left_join(hexGrid, tick1, by="joinID")
 
 # plot -------------------------------------------------------------------------
 
@@ -123,12 +123,13 @@ sfResult_lg <- pivot_longer(sfResult, cols = 6:7, names_to = "service", values_t
   st_as_sf()
 
 # plot capital levels
-#png(paste0(dirFigs,"capitals_V4_tick10.png"), units="cm", width = 20, height = 18, res=500)
+png(paste0(dirFigs,"capitals_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
 ggplot(sfResult_lg) +
   geom_sf(mapping = aes(fill = level), col = NA)+
   scale_fill_viridis()+
-  facet_wrap(~capital)
-#dev.off()
+  facet_wrap(~capital)+
+  theme_minimal()
+dev.off()
 
 # plot service provision
 ggplot(sfResult_lg) +
