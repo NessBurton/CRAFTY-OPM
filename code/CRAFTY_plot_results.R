@@ -132,8 +132,10 @@ ggplot(sfResult_lg) +
 dev.off()
 
 # plot service provision
+png(paste0(dirFigs,"services_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
 ggplot(sfResult_lg) +
   geom_sf(mapping = aes(fill = provision), col = NA)+
   scale_fill_viridis()+
   facet_wrap(~service)
+dev.off()
 
