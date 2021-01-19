@@ -88,6 +88,7 @@ capitalSummary %>%
 
 AFTcomp <- read.csv(paste0(dirOut,"/Baseline-0-99-LondonBoroughs-AggregateAFTCompetitiveness.csv"))
 
+
 # match back to hex grid -------------------------------------------------------
 
 hexGrid <- st_read(paste0(dirCRAFTY,"data-processed/hexgrids/hexGrid40m.shp"))
@@ -115,7 +116,7 @@ ggplot() +
   scale_fill_viridis()
 ggplot() +
   geom_sf(sfResult, mapping = aes(fill = OPMpresence), col = NA)+
-  scale_fill_viridis()
+  scale_fill_viridis()+theme_minimal()
 
 # facet plots
 

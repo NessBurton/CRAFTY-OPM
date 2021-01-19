@@ -78,15 +78,56 @@ dev.off()
 
 sfGspace <- st_read(paste0(dirData,"/OSMM_greenspace/OSMM_gspaceAOI.shp"))
 
-#png(paste0(dirFigs,"greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
+unique(sfGspace$priFunc)
+
+type.pal1 <- c("Amenity - Residential Or Business" = "grey",
+              "Amenity - Transport" = "darkgrey",
+              "Private Garden" = "#483D8B",
+              "Public Park Or Garden" = "#008000",
+              "School Grounds" = "#2F4F4F",
+              "Religious Grounds" = "#2F4F4F",
+              "Institutional Grounds" = "#2F4F4F",
+              "Play Space" = "#008080",
+              "Playing Field" = "#008080",
+              "Other Sports Facility" = "#00FA9A",
+              "Tennis Court" = "#00FA9A",
+              "Bowling Green" = "#00FA9A",
+              "Allotments Or Community Growing Spaces" = "#B8860B",
+              "Cemetery" = "#696969",
+              "Natural" = "white",
+              "Land Use Changing" = "white",
+              "Golf Course" = "#00FA9A")
+
+png(paste0(dirFigs,"greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
 ggplot(sfGspace)+
-  geom_sf(aes(fill=priFunc), col=NA)
-#dev.off()
+  geom_sf(aes(fill=priFunc), col=NA)+
+  scale_fill_manual(values=type.pal1)+
+  theme_minimal()
+dev.off()
 
 hexGspace <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"))
 
-#png(paste0(dirFigs,"hex_greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
+type.pal <- c("Amenity.residential.business" = "grey",
+              "Amenity.transport" = "darkgrey",
+              "Private.garden" = "#483D8B",
+              "Public.park" = "#008000",
+              "School.grounds" = "#2F4F4F",
+              "Religious.grounds" = "#2F4F4F",
+              "Institutional.grounds" = "#2F4F4F",
+              "Non.greenspace" = "white",
+              "Play.space" = "#008080",
+              "Playing.field" = "#008080",
+              "Other.sports" = "#00FA9A",
+              "Tennis.court" = "#00FA9A",
+              "Bowling.green" = "#00FA9A",
+              "Allotments" = "#B8860B",
+              "Cemetery" = "#696969",
+              "Natural" = "white",
+              "NA" = "red")
+
+png(paste0(dirFigs,"hex_greenspace_map.png"), units="cm", width = 20, height = 20, res=1000)
 ggplot() +
   geom_sf(hexGspace, mapping = aes(fill = type), col = NA)+
-  scale_fill_manual(values=type.pal)
-#dev.off()
+  scale_fill_manual(values=type.pal)+
+  theme_minimal()
+dev.off()
