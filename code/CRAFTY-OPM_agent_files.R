@@ -50,7 +50,7 @@ write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 Service <- c("biodiversity","recreation")
 Production <- c(1,0.5) # focus is on biodiversity, so provides maximum amount - recreation compromised by reduced access
 #OPMpresence <- c(1,1) # should only appear/manage when OPM is present 
-OPMinverted <- c(0.6,0.6) # service provision compromised by OPM presence, but less so due to management
+OPMinverted <- c(0,0) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(0.5,0.5) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(0.5,0.5) # some budget required
 knowledge <- c(0.8,0.8) # management requires knowledge
@@ -80,7 +80,7 @@ write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 Service <- c("biodiversity","recreation")
 Production <- c(0.5,1) # focus is on reducing risk to public health and allowing continued access
 #OPMpresence <- c(1,1) # should only appear when OPM is present 
-OPMinverted <- c(0.3,0.3) # service provision compromised by OPM presence, but less so due to management
+OPMinverted <- c(0,0) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(1,1) # this kind of management only possible where risk perceptions...
 budget <- c(1,1) # and budget are high
 knowledge <- c(0.8,0.8) # management requires knowledge
@@ -177,13 +177,15 @@ write.csv(Services, paste0(agentFilepath,"Services.csv"), row.names=F)
 
 # run CRAFTY for a single timestep and use biodiversity and recreation supply values as initial demand
 # set management demand relative to the values for bio and rec - but higher so that it takes priority
-Year <- 1
-biodiversity <- 12000 # inital supply V4 = 11,412
-recreation <- 8000 # inital supply V4 = 7,224
+Year <- c(1,2,3,4,5,6,7,8,9,10)
+bio <- 10490.667 #12000 # inital supply V4 = 11,412
+biodiversity <- seq(11000, 11900, 100)
+rec <- 6304 #8000 # inital supply V4 = 7,224
+recreation <- seq(7000, 7900, 100)
 # increase initial demand to see if it drives change
 #management <- 12000 # set so that it is higher than bio, taking priority
 Demand <- tibble(Year,biodiversity,recreation)
 write.csv(Demand, paste0(agentFilepath,"Demand.csv"), row.names=F)
 
-biodiversity/10000
-recreation/10000
+bio/10000
+rec/10000
