@@ -57,6 +57,7 @@ habitatRes <- 100 # Habitat resolution for rangeshifter
 
 # read in and aggregate
 rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.tif', rasterizeRes)))
+
 #plot(rstHabitat)
 #rstMin <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=min)
 #rstMax <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=max)
@@ -70,17 +71,51 @@ rstModal <- aggregate(rstHabitat, fact=habitatRes/rasterizeRes, fun=modal)
 # doesn't overestimate and still picks up some smaller areas
 # but definitely loses smaller areas
 
+# make sure BNG
+rstModal <- projectRaster(rstModal, crs = crs(shpHabitat))
+st_crs(rstModal)
 rstHabitat <- rstModal
-
+writeRaster(rstModal, file.path(dirRsftrInput, 'Habitat-100m.tif'), format="GTiff", overwrite=TRUE, NAflag=-9999)
 # export as ascii file for RangeShifter.
 # be sure to specify -9999 as the no data value (NAflag argument)
-#writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
+writeRaster(rstHabitat, file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)), format="ascii", overwrite=TRUE, NAflag=-9999)
 #rstHabitat <- raster(file.path(dirRsftrInput, sprintf('Habitat-%sm.asc', habitatRes)))
 
 #####
 # species locations
 #####
 csvSpecies <- read.csv(file=file.path(dirData, 'opm_trees.csv'), header=TRUE, sep=",")
+csvSpecies <- subset(csvSpecies, SurveyYear == 2014)
+csvSpecies <- subset(csvSpecies, Status == 'Infested' | Status == "Previously infested")
+
+# convert to shapefile
+csvSpecies <- csvSpecies[!is.na(csvSpecies$Easting), ]
+csvSpecies <- csvSpecies[!is.na(csvSpecies$Northing), ]
+shpInitialIndividuals <- csvSpecies
+rm(csvSpecies)
+coordinates(shpInitialIndividuals) <- ~Easting+Northing
+projection(shpInitialIndividuals) <- crs(shpHabitat)
+st_crs(shpInitialIndividuals) # make sure BNG
+# crop to species locations only within the study landscape
+shpInitialIndividuals <- crop(shpInitialIndividuals, extent(shpHabitat))
+shpInitialIndividuals$n <- 1
+# need to rasterise then extract the species locations to get the xy, row/col (not spatial) indices for rangeshifter.
+rstInitIndividuals <- rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0)
+plot(rstInitIndividuals)
+dfInitialIndividuals <- extract(rasterize(shpInitialIndividuals, rstHabitat, field='n', background=0), shpInitialIndividuals, cellnumbers=T, df=TRUE)
+# rangeshiftR requires a specific format for the individuals file, so add the required columns here,
+# and convert 'cells' value to x/y, row/col values.
+# as an example we are just initialising each cell with 100 individuals - we may need to adjust this later.
+dfInitialIndividuals$Year <- 0
+dfInitialIndividuals$Species <- 0
+dfInitialIndividuals$X <- dfInitialIndividuals$cells %% ncol(rstHabitat)
+dfInitialIndividuals$Y <- nrow(rstHabitat) - (floor(dfInitialIndividuals$cells / ncol(rstHabitat)))
+dfInitialIndividuals$Ninds <- 10 
+dfInitialIndividuals <- dfInitialIndividuals[ , !(names(dfInitialIndividuals) %in% c('ID', 'cells', 'layer'))]
+# make sure individuals aren't being counted more than once in the same location (due to multiple tree id points)
+dfInitialIndividuals <- unique(dfInitialIndividuals)
+write.table(dfInitialIndividuals, file.path(dirRsftrInput, paste0('initial_inds_2014_n10.txt')), row.names = F, quote = F, sep = '\t')
+  
 
 # subset to  trees that were infested or previously infested
 # keep previously infested based on assumption also made in Cowley et al. (2015)
