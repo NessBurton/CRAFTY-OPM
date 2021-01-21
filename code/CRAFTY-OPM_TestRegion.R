@@ -136,3 +136,35 @@ summary (TestRegion)
 TestRegion <- tibble::rowid_to_column(TestRegion, "id")
 
 write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/LondonBoroughs.csv"), row.names = F)
+
+###
+# 21/01/21
+# create updater file
+
+capitals <- read.csv(paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"), header = T, sep = ",")
+head(capitals)
+write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"),row.names = F)
+
+capitals$OPMinverted <- 0
+capitals$knowledge <- 0
+#write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY_tstep_1.csv"),row.names = F)
+
+updaterFiles <- capitals[1:8]
+head(updaterFiles)
+
+updaterFiles$OPMinverted <- 1
+updaterFiles$knowledge <- 0
+head(updaterFiles)
+summary(updaterFiles)
+
+ticks <- c(1,2,3,4,5,6,7,8,9,10)
+
+for (i in ticks){
+  
+  #tick <- ticks[1]
+  write.csv(updaterFiles, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY_tstep_",i,".csv") ,row.names = FALSE)
+  
+}
+
+
+
