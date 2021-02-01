@@ -141,13 +141,14 @@ write.csv(TestRegion, paste0(wd,"/data-processed/for-CRAFTY/LondonBoroughs.csv")
 # 21/01/21
 # create updater file
 
+dirCRAFTYInput <- path.expand(paste0(dirWorking, "/data_LondonOPM/"))
 capitals <- read.csv(paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"), header = T, sep = ",")
 head(capitals)
-write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"),row.names = F)
+#write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"),row.names = F)
 
-capitals$OPMinverted <- 0
-capitals$knowledge <- 0
-#write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY_tstep_1.csv"),row.names = F)
+capitals$OPMinverted <- 1 # OPM nowhere
+capitals$knowledge <- 0 # knowledge nowhere
+write.csv(capitals, paste0(dirCRAFTYInput,"worlds/LondonBoroughs/LondonBoroughs_XY.csv"),row.names = F)
 
 updaterFiles <- capitals[1:8]
 head(updaterFiles)
