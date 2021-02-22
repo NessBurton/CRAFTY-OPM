@@ -5,9 +5,11 @@
 
 library(tidyverse)
 
-wd <- "~/CRAFTY-opm" # sandbox VM
+#wd <- "~/CRAFTY-opm" # sandbox VM
+wd <- "~/eclipse-workspace/CRAFTY_RangeshiftR/data_LondonOPM/"
 
-agentFilepath <- paste0(wd,"/data-processed/for-CRAFTY/")
+agentProdFilepath <- paste0(wd,"production/baseline/")
+agentBehavFilepath <- paste0(wd,"agents/V4/")
 
 # define Production levels for Services (0-1, low-high)
 # and sensitivity of Production to each capital (0-1, low-high)
@@ -31,7 +33,7 @@ access <- c(0,1) # Production of recreation fully reliant on access capital leve
 
 no.mgmt <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 view(no.mgmt)
-write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
+write.csv(no.mgmt, paste0(agentProdFilepath,"no_mgmt.csv"), row.names=F)
 
 # no management (unable)
 #Service <- c("biodiversity","recreation","management")
@@ -44,7 +46,7 @@ write.csv(no.mgmt, paste0(agentFilepath,"no_mgmt.csv"), row.names=F)
 #access <- c(0,1,0) # Production of recreation dependent on access capital
 
 #no.mgmt.unable <- tibble(Service,OPMpresence,riskPerc,budget,knowledge,nature,access,Production)
-#write.csv(no.mgmt.unable, paste0(agentFilepath,"no_mgmt_unable.csv"), row.names=F)
+#write.csv(no.mgmt.unable, paste0(agentProdFilepath,"no_mgmt_unable.csv"), row.names=F)
 
 # manage (low intensity)
 Service <- c("biodiversity","recreation")
@@ -59,7 +61,7 @@ access <- c(0,1) # Production of recreation dependent on access capital
 
 mgmt.low <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 view(mgmt.low)
-write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
+write.csv(mgmt.low, paste0(agentProdFilepath,"mgmt_lowInt.csv"), row.names=F)
 
 # remove this agent for now
 # manage (med intensity)
@@ -74,7 +76,7 @@ write.csv(mgmt.low, paste0(agentFilepath,"mgmt_lowInt.csv"), row.names=F)
 #access <- c(0,1,0) # Production of recreation dependent on access capital
 
 #mgmt.med <- tibble(Service,OPMpresence,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
-#write.csv(mgmt.med, paste0(agentFilepath,"mgmt_medInt.csv"), row.names=F)
+#write.csv(mgmt.med, paste0(agentProdFilepath,"mgmt_medInt.csv"), row.names=F)
 
 # manage (high intensity)
 Service <- c("biodiversity","recreation")
@@ -89,7 +91,7 @@ access <- c(0,1) # Production of recreation dependent on access capital
 
 mgmt.high <- tibble(Service,OPMinverted,riskPerc,budget,knowledge,nature,access,Production)
 view(mgmt.high)
-write.csv(mgmt.high, paste0(agentFilepath,"mgmt_highInt.csv"), row.names=F)
+write.csv(mgmt.high, paste0(agentProdFilepath,"mgmt_highInt.csv"), row.names=F)
 
 
 ##### Agent behavioural parameter files
@@ -102,10 +104,10 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/no_mgmt.csv"
+productionCsvFile <- ".//production/%s/no_mgmt.csv"
 params0 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-write.csv(params0, paste0(agentFilepath,"AftParams_no_mgmt.csv"), row.names=F)
+write.csv(params0, paste0(agentBehavFilepath,"AftParams_no_mgmt.csv"), row.names=F)
 
 #aftParamId <- 0
 #givingInDistributionMean <- 0
@@ -118,7 +120,7 @@ write.csv(params0, paste0(agentFilepath,"AftParams_no_mgmt.csv"), row.names=F)
 #productionCsvFile <- ".//production/%s/no_mgmt_unable.csv"
 #params1 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
  #                 serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-#write.csv(params1, paste0(agentFilepath,"AftParams_no_mgmt_unable.csv"), row.names=F)
+#write.csv(params1, paste0(agentBehavFilepath,"AftParams_no_mgmt_unable.csv"), row.names=F)
 
 aftParamId <- 0
 givingInDistributionMean <- 0
@@ -128,10 +130,10 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/mgmt_lowInt.csv"
+productionCsvFile <- ".//production/%s/mgmt_lowInt.csv"
 params2 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-write.csv(params2, paste0(agentFilepath,"AftParams_mgmt_lowInt.csv"), row.names=F)
+write.csv(params2, paste0(agentBehavFilepath,"AftParams_mgmt_lowInt.csv"), row.names=F)
 
 #aftParamId <- 0
 #givingInDistributionMean <- 0
@@ -144,7 +146,7 @@ write.csv(params2, paste0(agentFilepath,"AftParams_mgmt_lowInt.csv"), row.names=
 #productionCsvFile <- ".//production/mgmt_medInt.csv"
 #params3 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
  #                 serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-#write.csv(params3, paste0(agentFilepath,"AftParams_mgmt_medInt.csv"), row.names=F)
+#write.csv(params3, paste0(agentBehavFilepath,"AftParams_mgmt_medInt.csv"), row.names=F)
 
 aftParamId <- 0
 givingInDistributionMean <- 0
@@ -154,10 +156,10 @@ givingUpDistributionSD <- 0
 serviceLevelNoiseMin <- 1
 serviceLevelNoiseMax <- 1
 givingUpProb <- 0
-productionCsvFile <- ".//production/mgmt_highInt.csv"
+productionCsvFile <- ".//production/%s/mgmt_highInt.csv"
 params4 <- tibble(aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,
                   serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile)
-write.csv(params4, paste0(agentFilepath,"AftParams_mgmt_highInt.csv"), row.names=F)
+write.csv(params4, paste0(agentBehavFilepath,"AftParams_mgmt_highInt.csv"), row.names=F)
 
 ##### Also capitals, Services index tables, + demand
 
@@ -165,13 +167,13 @@ write.csv(params4, paste0(agentFilepath,"AftParams_mgmt_highInt.csv"), row.names
 Name <- c("OPMinverted","riskPerc","budget","knowledge","nature","access")
 Index <- c(0,1,2,3,4,5)
 Capitals <- tibble(Name,Index)
-write.csv(Capitals, paste0(agentFilepath,"Capitals.csv"), row.names=F)
+write.csv(Capitals, paste0(wd,"csv/Capitals.csv"), row.names=F)
 
 # Services
 Name <- c("biodiversity","recreation")
 Index <- c(0,1)
 Services <- tibble(Name,Index)
-write.csv(Services, paste0(agentFilepath,"Services.csv"), row.names=F)
+write.csv(Services, paste0(wd,"csv/Services.csv"), row.names=F)
 
 # Demand
 
@@ -185,7 +187,7 @@ recreation <- seq(7000, 7900, 100)
 # increase initial demand to see if it drives change
 #management <- 12000 # set so that it is higher than bio, taking priority
 Demand <- tibble(Year,biodiversity,recreation)
-write.csv(Demand, paste0(agentFilepath,"Demand.csv"), row.names=F)
+write.csv(Demand, paste0(wd,"worlds/baseline/Demand.csv"), row.names=F)
 
 bio/10000
 rec/10000
