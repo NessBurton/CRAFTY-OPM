@@ -56,7 +56,7 @@ ggplot() +
 
 summary(hexGrid)
 # write
-st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_RAW.shp"))
+st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_RAW.shp"), delete_dsn = TRUE) #(delete_dsn overwrites existing file)
 
 # leave normalisation for later when compiling all capitals - leave as raw for now
 # normalise bio values 0-1

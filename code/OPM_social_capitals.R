@@ -208,7 +208,8 @@ hexSocial$knowledge <- 0
 ### Check and write to file ----------------------------------------------------
 
 head(hexSocial)
+hexSocial <- st_as_sf(hexSocial)
 
 # last written to file 26/02/21
-st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social_RAW.shp"), append=F)
+st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social_RAW.shp"), delete_dsn = TRUE) #(delete_dsn overwrites existing file)
 
