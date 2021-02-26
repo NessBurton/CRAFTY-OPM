@@ -7,15 +7,17 @@
 library(tidyverse)
 library(sf)
 library(tmap)
+library(Hmisc) # for %nin% (not in)
+library(viridis)
 
-# file paths
-#wd <- "~/Documents/crafty-opm" # mac
-#wd <- "~/R/CRAFTY-OPM" # FR
+### file paths -----------------------------------------------------------------
+
 wd <- "~/CRAFTY-opm" # sandbox VM
 dirData <- file.path(wd, 'data-raw')
 dirOut <- file.path(wd, 'data-processed')
 
-# join files with type and ownerIDs
+
+### join files with type and ownerIDs ------------------------------------------
 hexType <- st_read(paste0(dirOut, "/hexGrids/hexGrid40m_types2.shp"))
 hexOwner <- st_read(paste0(dirOut,"/capitals/hexG_ownerIDs2.shp"))
 hexType <- hexType[,c(1,21)]
@@ -46,13 +48,13 @@ ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = type), col = NA)+
   scale_fill_manual(values=type.pal)
 
-##### Risk Perception
+
+### Risk Perception ------------------------------------------------------------
+
 # new risk perception variable
 hexSocial$riskPerc <- NA 
 
-# CAN SKIP RE_DOING THIS AND GO TO LINE 155
-#####
-# start test with private gardens
+# start with private gardens
 # 16% strongly agree OPM is a risk - value = 1
 # 54% agree - value = 0.8
 # 9% neutral - value = 0.5
@@ -78,6 +80,7 @@ perc21 <- length(sample(gardens21,(0.21*length(gardensAll))))
 hexSocial$riskPerc[gardens21] <- 0
 
 summary(hexSocial$riskPerc)
+
 #check
 length(hexSocial$riskPerc[which(hexSocial$riskPerc==0.8)])/length(gardensAll)*100 # 54%
 length(hexSocial$riskPerc[which(hexSocial$riskPerc==0.5)])/length(gardensAll)*100 # 9%
@@ -93,7 +96,6 @@ parks <- filter(hexSocial, grepl("park", ownerID))
 parkIDs <- unique(parks$ownerID)
 perc50 <- length(sample(parkIDs,(0.5*length(parkIDs)))) # 50% of parkIDs
 parkIDhalf <- sample(parkIDs,perc50,replace=F) # randomly sample
-library(Hmisc) # for %nin% (not in)
 index <- parkIDs %nin% parkIDhalf
 parkIDhalf2 <- parkIDs[index==T] # extract the other half
 # check
@@ -113,25 +115,33 @@ hexSocial$riskPerc[which(hexSocial$ownerID %in% parkIDhalf2 == T)] <- 0.5
 others <- filter(hexSocial, grepl("schl|rlgs|inst|plysp|plyfd|othsp|ten|bwl|cmtry|altmt|amnrb|amnt", ownerID)) 
 otherIDs <- unique(others$ownerID)
 others30 <- sample(otherIDs,(0.3*length(otherIDs)),replace = F)
+
 # check
 length(others30)/length(otherIDs)*100
 hexSocial$riskPerc[which(hexSocial$ownerID %in% others30 == T)] <- 0.8
+
 # select ids which haven't been selected already
 index2 <- otherIDs %nin% others30 
 others70 <- otherIDs[index2==T]
+
 # check
 length(others70)/length(otherIDs)*100
+
 # now sample 50% (of all otherIDs) from these ids
 others50 <- sample(others70, (0.5*length(otherIDs)))
+
 # check
 length(others50)/length(otherIDs)*100
 hexSocial$riskPerc[which(hexSocial$ownerID %in% others50 == T)] <- 0.5
+
 # now need to select 18% from IDs which haven't been sampled already
 index3 <- others70 %nin% others50
 summary(index3==T)
 others20 <- others70[index3==T]
+
 # check
 length(others20)/length(otherIDs)*100
+
 # sample 18% 
 others18 <- sample(others20, (0.18*length(otherIDs)))
 length(others18)/length(otherIDs)*100
@@ -143,18 +153,14 @@ hexSocial$riskPerc[which(hexSocial$ownerID %in% others2==T)] <-0.2
 
 # example
 #png(paste0(wd,"/figures/riskPerc_example.png"), width = 800, height = 600)
-library(viridis)
 ggplot()+
   geom_sf(hexSocial, mapping = aes(fill = riskPerc), col = NA)+
   scale_fill_viridis()
 #dev.off()
 
-# last written to file 28/10/20
-st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
-#####
-hexSocial <- st_read(paste0(dirOut,"/capitals/hexG_social.shp"))
 
-##### Budget
+### Budget ---------------------------------------------------------------------
+
 # apply randomly to ownerIDs? or just apply to whole boroughs
 
 # read in hexGrid with boroughs
@@ -179,24 +185,15 @@ household.income <- as.data.frame(cbind(boroughs,income))
 household.income$income <- as.numeric(household.income$income)
 household.income$rank <- rank(-household.income$income)
 
-# normalise 0-1
-data <- household.income$income
-normalised <- (data-min(data))/(max(data)-min(data))
-hist(data)
-hist(normalised)
-household.income$income.norm <- normalised
-
 write.csv(household.income, paste0(dirOut,"/capitals/median_household_income.csv"))
-
 
 # now assign values to boroughs
 hexSocial$budget <- NA
-hexSocial$budget[which(hexSocial$borough=="camden")] <- household.income$income.norm[which(household.income$boroughs=="camden")]
-hexSocial$budget[which(hexSocial$borough=="westminster")] <- household.income$income.norm[which(household.income$boroughs=="westminster")]
-hexSocial$budget[which(hexSocial$borough=="kensington")] <- household.income$income.norm[which(household.income$boroughs=="kensington")]
-hexSocial$budget[which(hexSocial$borough=="hammersmith")] <- household.income$income.norm[which(household.income$boroughs=="hammersmith")]
+hexSocial$budget[which(hexSocial$borough=="camden")] <- household.income$income[which(household.income$boroughs=="camden")]
+hexSocial$budget[which(hexSocial$borough=="westminster")] <- household.income$income[which(household.income$boroughs=="westminster")]
+hexSocial$budget[which(hexSocial$borough=="kensington")] <- household.income$income[which(household.income$boroughs=="kensington")]
+hexSocial$budget[which(hexSocial$borough=="hammersmith")] <- household.income$income[which(household.income$boroughs=="hammersmith")]
 
-library(viridis)
 #png(paste0(wd,"/figures/budget_capital.png"), width = 800, height = 800)
 ggplot() +
   geom_sf(hexSocial, mapping = aes(fill = budget), col = NA)+
@@ -204,10 +201,14 @@ ggplot() +
 #dev.off()
 
 
-##### Knowledge - empty column for now, will rely on OPM presence
+### Knowledge - empty column for now, will rely on OPM presence ----------------
 
-#hexSocial$knowledge <- 0
+hexSocial$knowledge <- 0
 
-# last written to file 30/11/20
-st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social.shp"), append=F)
+### Check and write to file ----------------------------------------------------
+
+head(hexSocial)
+
+# last written to file 26/02/21
+st_write(hexSocial, paste0(dirOut,"/capitals/hexG_social_RAW.shp"), append=F)
 
