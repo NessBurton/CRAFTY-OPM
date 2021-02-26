@@ -3,28 +3,30 @@
 # author: VB
 # description: process GiGL biodiversity data and OS open greenspace data
 
-# load libraries
+### load libraries -------------------------------------------------------------
 library(tidyverse)
 library(sf)
 library(tmap)
 
-# file paths
+### file paths -----------------------------------------------------------------
 #wd <- "~/Documents/crafty-opm" # mac
 #wd <- "~/R/CRAFTY-OPM" # FR
 wd <- "~/CRAFTY-opm"# sandbox VM
 dirData <- file.path(wd, 'data-raw')
 dirOut <- file.path(wd, 'data-processed')
 
-# hex points and grid
+
+### hex points and grid --------------------------------------------------------
+
 hexPoints <- st_read(paste0(dirOut,"/hexGrids/hexPoints40m.shp"))
 
 # GiGL dataset (clipped to AOI and rasterised at 2m res in Arc)
 bio <- raster(paste0(dirOut,"/rasters/rastBHP2m.tif"))
-plot(bio)
+spplot(bio)
 
 # OS open greenspace data
 access <- raster(paste0(dirOut,"/rasters/rstAccess2m.tif"))
-plot(access)
+spplot(access)
 
 # extract values 
 # points need to be SpatialPoints
@@ -45,16 +47,16 @@ hexGrid <- st_read(paste0(dirOut,"/hexGrids/hexGrid40m.shp"))
 hexGrid <- as.data.frame(hexGrid)
 hexGrid <- merge(hexGrid, hexP_capitals, by="joinID")
 hexGrid$geometry.y<-NULL # remove poin geometry
-colnames(hexGrid)[2] <- "geometry"
+colnames(hexGrid)[3] <- "geometry"
 hexGrid <- st_as_sf(hexGrid)
 
 # check
 ggplot() +
-  geom_sf(hexGrid, mapping = aes(fill = access), col = NA)
+  geom_sf(hexGrid, mapping = aes(fill = nature), col = NA)
 
 summary(hexGrid)
 # write
-st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access.shp"))
+st_write(hexGrid, paste0(dirOut,"/capitals/hexG_bio_access_RAW.shp"))
 
 # leave normalisation for later when compiling all capitals - leave as raw for now
 # normalise bio values 0-1
