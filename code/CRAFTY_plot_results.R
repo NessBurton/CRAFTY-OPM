@@ -11,189 +11,242 @@ setwd(dirCRAFTY)
 # figure directory
 dirFigs <- "C:/Users/vanessa.burton.sb/Documents/CRAFTY-opm/figures/"
 
-# read in all results ----------------------------------------------------------
-
-dfResults <-
-  list.files(path = "./output/",
-             pattern = "*.csv", 
-             full.names = T) %>% 
-  grep("-Cell-", value=TRUE, .) %>% 
-  #map_df(~read_csv(., col_types = cols(.default = "c")))
-  map_df(~read.csv(.))
-
-head(dfResults)
-summary(dfResults)
-dfResults$Tick <- factor(dfResults$Tick)
-dfResults$Agent <- factor(dfResults$Agent)
-
-# undo OPM inversion -----------------------------------------------------------
-
-# inverted OPM presence capital 
-invert <- dfResults$Capital.OPMinverted - 1
-z <- abs(invert)
-dfResults$OPMpresence <- z
-# check OPM values/distribution
-summary(dfResults$OPMpresence)
-hist(dfResults$OPMpresence[which(dfResults$OPMpresence!=0)])
-
-# bar plot agents --------------------------------------------------------------
-
-agentSummary <- dfResults %>% 
-  group_by(Tick,Agent) %>% 
-  summarise(agentCount = length(Agent))
-
-agentSummary %>% 
-  #filter(Agent != "no_mgmt") %>% 
-  ggplot()+
-  geom_col(aes(x=Tick,y=agentCount, fill=Agent), position = "stack")#+
-  #facet_wrap(~Tick)
-
-# plot service provision through time ------------------------------------------
-
-serviceSummary <- dfResults %>% 
-  group_by(Tick,Agent) %>% 
-  #group_by(Tick) %>% 
-  summarise(biodiversity = mean(Service.biodiversity),
-            recreation = mean(Service.recreation)) %>% 
-  pivot_longer(., cols=3:4, names_to="service",values_to="provision")
-
-serviceSummary$Tick <- as.numeric(as.character(serviceSummary$Tick))
-
-serviceSummary %>% 
-  ggplot()+
-  geom_line(aes(x=Tick,y=provision,col=Agent))+
-  facet_wrap(~service)
-
-# plot capital levels through time ---------------------------------------------
-
-capitalSummary <- dfResults %>% 
-  group_by(Tick,Agent) %>% 
-  #group_by(Tick) %>% 
-  summarise(OPM = mean(OPMpresence),
-            riskPerc = mean(Capital.riskPerc),
-            budget = mean(Capital.budget),
-            knowledge = mean(Capital.knowledge),
-            nature = mean(Capital.nature),
-            access = mean(Capital.access)) %>% 
-  pivot_longer(., cols=3:8, names_to="capital",values_to="level")
-
-capitalSummary$Tick <- as.numeric(as.character(capitalSummary$Tick))
-
-capitalSummary %>% 
-  ggplot()+
-  geom_line(aes(x=Tick,y=level,col=capital))+
-  facet_wrap(~Agent)
-
-# plot competitiveness through time --------------------------------------------
-
-AFTcomp <- read.csv(paste0(dirOut,"/Baseline-0-99-LondonBoroughs-AggregateAFTCompetitiveness.csv"))
-
-
-# match back to hex grid -------------------------------------------------------
-
-hexGrid <- st_read(paste0(dirCRAFTY,"data-processed/hexgrids/hexGrid40m.shp"))
-london_xy_df <- read.csv(paste0(dirCRAFTY,"data-processed/Cell_ID_XY_Borough.csv"))
-tick1 <- filter(dfResults, Tick==1)
-val_xy <- data.frame(tick1$X,tick1$Y)
-colnames(val_xy) <- c("X", "Y")
-x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
-y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
-
-cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
-  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
-}
-
-tick1$joinID <- cellid
-sfResult <- left_join(hexGrid, tick1, by="joinID")
-
-# plot -------------------------------------------------------------------------
-
-ggplot() +
-  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)+
-  scale_fill_brewer(palette="Dark2")
-ggplot() +
-  geom_sf(sfResult, mapping = aes(fill = Capital.OPMinverted), col = NA)+
-  scale_fill_viridis()
-ggplot() +
-  geom_sf(sfResult, mapping = aes(fill = OPMpresence), col = NA)+
-  scale_fill_viridis()+theme_minimal()
-
-# facet plots
-
-sfResult_lg <- pivot_longer(sfResult, cols = 6:7, names_to = "service", values_to = "provision") %>%
-  pivot_longer(., cols=c(7:11,14), names_to="capital", values_to="level") %>% 
-  st_as_sf()
-
-# plot capital levels
-png(paste0(dirFigs,"capitals_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
-ggplot(sfResult_lg) +
-  geom_sf(mapping = aes(fill = level), col = NA)+
-  scale_fill_viridis()+
-  facet_wrap(~capital)+
-  theme_minimal()
-dev.off()
-
-# plot service provision
-png(paste0(dirFigs,"services_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
-ggplot(sfResult_lg) +
-  geom_sf(mapping = aes(fill = provision), col = NA)+
-  scale_fill_viridis()+
-  facet_wrap(~service)+
-  theme_minimal()
-dev.off()
-
-# plot agents at 3 timesteps
-#brewer.pal(3, name = "Dark2")
 agent.pal <- c("no_mgmt" = "grey",
                "mgmt_lowInt" = "#1B9E77",
                "mgmt_highInt" = "#D95F02")
 
-# tick 1
-png(paste0(dirFigs,"agents_V4_tick1.png"), units="cm", width = 20, height = 18, res=1000)
-ggplot() +
-  geom_sf(sfResult, mapping = aes(fill = Agent), col = NA)+
-  scale_fill_manual(values=agent.pal)+
-  theme_minimal()
-dev.off()
+# read in all results ----------------------------------------------------------
 
-tick5 <- filter(dfResults, Tick==5)
-val_xy <- data.frame(tick5$X,tick5$Y)
-colnames(val_xy) <- c("X", "Y")
-x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
-y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+# scenarios
+scenarioList <- c("Baseline","de-regulation","govt-intervention")
 
-cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
-  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+for (i in scenarioList){
+  
+  #i <- scenarioList[2]
+  
+  dfResults <-
+    list.files(path = paste0(dirOut,"/V4/",i,"/"),
+               pattern = "*.csv", 
+               full.names = T) %>% 
+    grep("-Cell-", value=TRUE, .) %>% 
+    #map_df(~read_csv(., col_types = cols(.default = "c")))
+    map_df(~read.csv(.))
+  
+  head(dfResults)
+  summary(dfResults)
+  dfResults$Tick <- factor(dfResults$Tick)
+  dfResults$Agent <- factor(dfResults$Agent)
+  
+  # undo OPM inversion -----------------------------------------------------------
+  
+  # inverted OPM presence capital 
+  invert <- dfResults$Capital.OPMinverted - 1
+  z <- abs(invert)
+  dfResults$OPMpresence <- z
+  
+  
+  # bar plot agents --------------------------------------------------------------
+  
+  agentSummary <- dfResults %>% 
+    group_by(Tick,Agent) %>% 
+    summarise(agentCount = length(Agent)) %>% 
+    ungroup() %>% 
+    group_by(Tick) %>% 
+    mutate(tot=sum(agentCount),
+           perc=agentCount/tot*100)
+  
+  p1 <- agentSummary %>% 
+    #filter(Agent != "no_mgmt") %>% 
+    ggplot()+
+    geom_col(aes(x=Tick,y=perc, fill=Agent), position = "stack")+
+    scale_fill_manual(values=agent.pal)+
+    ylab("Percentage of area (%)")+xlab("Year")+
+    theme_bw()
+  
+  png(paste0(dirFigs,"agentBarPlot_",i,".png"), units="cm", width = 12, height = 8, res=1000)
+  print(p1)
+  dev.off()
+  
+  # plot service provision through time ------------------------------------------
+  
+  serviceSummary <- dfResults %>% 
+    group_by(Tick,Agent) %>% 
+    #group_by(Tick) %>% 
+    summarise(biodiversity = mean(Service.biodiversity),
+              recreation = mean(Service.recreation)) %>% 
+    pivot_longer(., cols=3:4, names_to="service",values_to="provision")
+  
+  serviceSummary$Tick <- as.numeric(as.character(serviceSummary$Tick))
+  
+  p2 <- serviceSummary %>% 
+    ggplot()+
+    geom_line(aes(x=Tick,y=provision,col=Agent))+
+    scale_color_manual(values=agent.pal)+
+    facet_wrap(~service)+
+    ylim(c(0,1))+ylab("Service provision")+
+    scale_x_continuous("Year",n.breaks = 10)+
+    theme_bw()
+  
+  png(paste0(dirFigs,"servicesLinePlot_",i,".png"), units="cm", width = 12, height = 8, res=1000)
+  print(p2)
+  dev.off()
+  
+  # plot capital levels through time ---------------------------------------------
+  
+  capitalSummary <- dfResults %>% 
+    group_by(Tick,Agent) %>% 
+    #group_by(Tick) %>% 
+    summarise(OPM = mean(OPMpresence),
+              riskPerc = mean(Capital.riskPerc),
+              budget = mean(Capital.budget),
+              knowledge = mean(Capital.knowledge),
+              nature = mean(Capital.nature),
+              access = mean(Capital.access)) %>% 
+    pivot_longer(., cols=3:8, names_to="capital",values_to="level")
+  
+  capitalSummary$Tick <- as.numeric(as.character(capitalSummary$Tick))
+  
+  p3 <- capitalSummary %>% 
+    ggplot()+
+    geom_line(aes(x=Tick,y=level,col=capital))+
+    scale_color_brewer(palette = "Dark2")+
+    facet_wrap(~Agent)+
+    ylim(c(0,1))+ylab("Capital level")+
+    scale_x_continuous("Year",n.breaks = 10)+
+    theme_bw()
+  
+  png(paste0(dirFigs,"capitalsLinePlot_",i,".png"), units="cm", width = 18, height = 8, res=1000)
+  print(p3)
+  dev.off()
+  
+  
+  # plot competitiveness through time --------------------------------------------
+  
+  #AFTcomp <- read.csv(paste0(dirOut,"/V4/Baseline/Baseline-0-99-LondonBoroughs-AggregateAFTCompetitiveness.csv"))
+  # issue with competitiveness file?
+  
+  # plot agents at 3 timesteps -------------------------------------------------
+  
+  hexGrid <- st_read(paste0(dirCRAFTY,"data-processed/hexgrids/hexGrid40m.shp"))
+  london_xy_df <- read.csv(paste0(dirCRAFTY,"data-processed/Cell_ID_XY_Borough.csv"))
+  
+  # tick 1
+  tick1 <- filter(dfResults, Tick==1)
+  val_xy <- data.frame(tick1$X,tick1$Y)
+  colnames(val_xy) <- c("X", "Y")
+  x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+  y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+  
+  cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+    which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+  }
+  
+  tick1$joinID <- cellid
+  sfTick1 <- left_join(hexGrid, tick1, by="joinID")
+  
+  png(paste0(dirFigs,"agents_",i,"_tick1.png"), units="cm", width = 12, height = 10, res=1000)
+  print(ggplot() +
+    geom_sf(sfTick1, mapping = aes(fill = Agent), col = NA)+
+    scale_fill_manual(values=agent.pal)+
+    theme_bw())
+  dev.off()
+  
+  
+  # tick 5
+  tick5 <- filter(dfResults, Tick==5)
+  val_xy <- data.frame(tick5$X,tick5$Y)
+  colnames(val_xy) <- c("X", "Y")
+  x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+  y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+  
+  cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+    which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+  }
+  
+  tick5$joinID <- cellid
+  sfTick5 <- left_join(hexGrid, tick5, by="joinID")
+  
+  png(paste0(dirFigs,"agents_",i,"_tick5.png"), units="cm", width = 12, height = 10, res=1000)
+  print(ggplot() +
+    geom_sf(sfTick5, mapping = aes(fill = Agent), col = NA)+
+    scale_fill_manual(values=agent.pal)+
+    theme_minimal())
+  dev.off()
+  
+  
+  # tick 10
+  tick10 <- filter(dfResults, Tick==10)
+  val_xy <- data.frame(tick10$X,tick10$Y)
+  colnames(val_xy) <- c("X", "Y")
+  x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
+  y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+  
+  cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
+    which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
+  }
+  
+  tick10$joinID <- cellid
+  sfTick10 <- left_join(hexGrid, tick10, by="joinID")
+  
+  png(paste0(dirFigs,"agents_",i,"_tick10.png"), units="cm", width = 12, height = 10, res=1000)
+  print(ggplot() +
+    geom_sf(sfTick10, mapping = aes(fill = Agent), col = NA)+
+    scale_fill_manual(values=agent.pal)+
+    theme_minimal())
+  dev.off()
+  
+  png(paste0(dirFigs,"capitals_",i,".png"), units="cm", width = 18, height = 14, res=1000)
+  print(tick10 %>% 
+    pivot_longer(cols = starts_with("Capital"),
+                 names_to="Capital",values_to="Level") %>% 
+    left_join(., hexGrid, by="joinID") %>% 
+    st_as_sf() %>% 
+    ggplot()+
+    geom_sf(aes(fill=Level),col=NA)+
+    scale_fill_viridis()+
+    facet_wrap(~ Capital)+
+    theme_bw()+
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()))
+  dev.off()
+  
 }
 
-tick5$joinID <- cellid
-sfTick5 <- left_join(hexGrid, tick5, by="joinID")
+### RangeshiftR populations ----------------------------------------------------
 
-# tick 5
-png(paste0(dirFigs,"agents_V4_tick5.png"), units="cm", width = 20, height = 18, res=1000)
-ggplot() +
-  geom_sf(sfTick5, mapping = aes(fill = Agent), col = NA)+
-  scale_fill_manual(values=agent.pal)+
-  theme_minimal()
-dev.off()
+dfRS_stlone <- read.csv(paste0(dirOut,"/development/dfRangeshiftR_output_RsftR_standalone.csv"))
+dfRS_stlone$models <- "Uncoupled"
+dfRS_stlone$scenario <- NA
 
-tick10 <- filter(dfResults, Tick==10)
-val_xy <- data.frame(tick10$X,tick10$Y)
-colnames(val_xy) <- c("X", "Y")
-x_coord <- london_xy_df[match(val_xy$X, london_xy_df$X), "x_coord"]
-y_coord <- london_xy_df[match(val_xy$Y, london_xy_df$Y), "y_coord"]
+dfRS_baseline <- read.csv(paste0(dirOut,"/dfRangeshiftR_output_coupled_Baseline.csv"))
+dfRS_baseline$models <- "Coupled"
+dfRS_baseline$scenario <- "Baseline"
 
-cellid <- foreach(rowid = 1:nrow(val_xy), .combine = "c") %do% { 
-  which((as.numeric(val_xy[rowid, 1]) == london_xy_df$X) & (as.numeric(val_xy[rowid, 2]) == london_xy_df$Y))
-}
+dfRS_dereg <- read.csv(paste0(dirOut,"/dfRangeshiftR_output_coupled_de-regulation.csv"))
+dfRS_dereg$models <- "Coupled"
+dfRS_dereg$scenario <- "De-regulation"
 
-tick10$joinID <- cellid
-sfTick10 <- left_join(hexGrid, tick10, by="joinID")
+dfRS_govt <- read.csv(paste0(dirOut,"/dfRangeshiftR_output_coupled_govt-intervention.csv"))
+dfRS_govt$models <- "Coupled"
+dfRS_govt$scenario <- "Govt-Intervention"
 
-# tick 5
-png(paste0(dirFigs,"agents_V4_tick10.png"), units="cm", width = 20, height = 18, res=1000)
-ggplot() +
-  geom_sf(sfTick10, mapping = aes(fill = Agent), col = NA)+
-  scale_fill_manual(values=agent.pal)+
-  theme_minimal()
-dev.off()
+dfRsftR_all <- rbind(dfRS_stlone,dfRS_baseline,dfRS_dereg,dfRS_govt)
+head(dfRsftR_all)
+dfRsftR_all$models <- factor(dfRsftR_all$models, ordered = T, levels = c("Uncoupled","Coupled"))
+dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("Baseline","De-regulation","Govt-Intervention"))
+
+dfRsftR_all %>% filter(Year==2) %>% 
+  ggplot(aes(timestep,NInds,color=scenario))+
+  geom_smooth()+
+  #facet_wrap(~scenario)+
+  scale_x_continuous(breaks=seq(1,10,1))+
+  xlab("Year")+ylab("Total number of individuals in landscape")+
+  theme_bw()+theme(text = element_text(size=20, family = "Roboto"),
+                   axis.text=element_text(size=10, family = "Roboto"),
+                   axis.title=element_text(size=14,face="bold", family = "Roboto"),
+                   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+                   axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
+
+  
