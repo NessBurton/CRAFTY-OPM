@@ -23,7 +23,7 @@ scenarioList <- c("Baseline","de-regulation","govt-intervention")
 
 for (i in scenarioList){
   
-  #i <- scenarioList[1]
+  i <- scenarioList[3]
   
   dfResults <-
     list.files(path = paste0(dirOut,"/V4/",i,"/"),
@@ -289,6 +289,7 @@ dfRsftR_all %>% filter(Year==2) %>%
                    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 dev.off()
 
+
 ### raster pops ----------------------------------------------------------------
 
 library(raster)
@@ -314,4 +315,64 @@ clrs.viridis <- colorRampPalette(viridis::viridis(10))
 png(paste0(dirFigs,"/rsftr_pops_CRAFTY-coupled_govt-intervention.png"), width = 800, height = 600)
 spplot(rstGovt, layout = c(5,2), col.regions=clrs.viridis(14), at = seq(0,70,10))
 dev.off()
+
+
+### service prod per scenario --------------------------------------------------
+
+# scenarios
+scenarioList <- c("Baseline","de-regulation","govt-intervention")
+#scenarioList <- "de-regulation"
+
+dfMaster <- data.frame()
+
+for (i in scenarioList){
   
+  #i <- scenarioList[3]
+  dfResults <-
+    list.files(path = paste0(dirOut,"/V4/",i,"/"),
+               pattern = "*.csv", 
+               full.names = T) %>% 
+    grep("-Cell-", value=TRUE, .) %>% 
+    #map_df(~read_csv(., col_types = cols(.default = "c")))
+    map_df(~read.csv(.))
+  
+  dfResults$Tick <- factor(dfResults$Tick)
+  dfResults$Agent <- factor(dfResults$Agent)
+  dfResults$scenario <- i
+  
+  dfMaster <- rbind(dfMaster,dfResults)
+  
+}
+
+head(dfMaster)
+dfMaster$scenario <- factor(dfMaster$scenario, ordered = T, levels=scenarioList)
+summary(dfMaster)
+
+dfMaster$Tick <- as.numeric(dfMaster$Tick)
+
+ggplot(dfMaster)+
+  geom_col(aes(Tick,Service.biodiversity,fill=Agent))+
+  facet_wrap(~scenario)
+
+dfMaster %>% pivot_longer(cols = Service.biodiversity:Service.recreation,
+                          names_to = "Benefit", values_to = "Value") %>% 
+  group_by(scenario, Benefit, Tick) %>% 
+  summarise(Value = mean(Value)) %>% 
+  ggplot(aes(Tick,Value,col=scenario))+
+  geom_line(lwd=1)+
+  facet_wrap(~Benefit)+
+  ylim(c(0,1))+ylab("Service level")+
+  scale_x_continuous("Year",n.breaks = 10)+
+  theme_bw()
+
+dfMaster %>% pivot_longer(cols = Capital.OPMinverted:Capital.access,
+                          names_to = "Capital", values_to = "Value") %>% 
+  group_by(scenario, Capital, Tick) %>% 
+  summarise(Value = mean(Value)) %>% 
+  ggplot(aes(Tick,Value,col=scenario))+
+  geom_line(position=position_jitter(),lwd=1)+
+  facet_wrap(~Capital)+
+  ylim(c(0,1))+ylab("Capital level")+
+  scale_x_continuous("Year",n.breaks = 10)+
+  theme_bw()
+
