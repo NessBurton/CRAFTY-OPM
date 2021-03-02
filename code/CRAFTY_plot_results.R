@@ -23,7 +23,7 @@ scenarioList <- c("Baseline","de-regulation","govt-intervention")
 
 for (i in scenarioList){
   
-  #i <- scenarioList[2]
+  #i <- scenarioList[1]
   
   dfResults <-
     list.files(path = paste0(dirOut,"/V4/",i,"/"),
@@ -44,7 +44,6 @@ for (i in scenarioList){
   invert <- dfResults$Capital.OPMinverted - 1
   z <- abs(invert)
   dfResults$OPMpresence <- z
-  
   
   # bar plot agents --------------------------------------------------------------
   
@@ -88,8 +87,21 @@ for (i in scenarioList){
     scale_x_continuous("Year",n.breaks = 10)+
     theme_bw()
   
-  png(paste0(dirFigs,"servicesLinePlot_",i,".png"), units="cm", width = 12, height = 8, res=1000)
+  png(paste0(dirFigs,"servicesLinePlot_",i,".png"), units="cm", width = 12, height = 6, res=1000)
   print(p2)
+  dev.off()
+  
+  p2a <- serviceSummary %>% 
+    ggplot()+
+    geom_smooth(aes(x=Tick,y=provision,col=Agent))+
+    scale_color_manual(values=agent.pal)+
+    facet_wrap(~service)+
+    ylim(c(0,1))+ylab("Service provision")+
+    scale_x_continuous("Year",n.breaks = 10)+
+    theme_bw()
+  
+  png(paste0(dirFigs,"servicesLinePlot_",i,"2.png"), units="cm", width = 12, height = 6, res=1000)
+  print(p2a)
   dev.off()
   
   # plot capital levels through time ---------------------------------------------
@@ -213,6 +225,30 @@ for (i in scenarioList){
           axis.ticks.y = element_blank()))
   dev.off()
   
+  # plot capitals through time per region
+  dfResults$joinID <- rep(cellid, 10)
+  sfResults <- left_join(dfResults, hexGrid, by="joinID") 
+  sfResults$Tick <- as.numeric(sfResults$Tick)
+  
+  png(paste0(dirFigs,"capitalsPerBorough_",i,".png"), units="cm", width = 18, height = 12, res=1000)
+  print(sfResults %>% 
+    group_by(borough,Tick) %>% 
+    summarise(OPM = mean(OPMpresence),
+              riskPerc = mean(Capital.riskPerc),
+              budget = mean(Capital.budget),
+              knowledge = mean(Capital.knowledge),
+              nature = mean(Capital.nature),
+              access = mean(Capital.access)) %>% 
+    pivot_longer(., cols=3:8, names_to="capital",values_to="level") %>% 
+    ggplot(aes(Tick,level,colour=capital))+
+    geom_line(position=position_jitter(w=0, h=0.01))+
+    scale_color_brewer(palette = "Dark2")+
+    facet_wrap(~borough)+
+    theme_bw()+
+    ylim(c(0,1))+ylab("Capital level")+
+    scale_x_continuous("Year",n.breaks = 10))
+  dev.off()
+  
 }
 
 ### RangeshiftR populations ----------------------------------------------------
@@ -238,18 +274,20 @@ head(dfRsftR_all)
 dfRsftR_all$models <- factor(dfRsftR_all$models, ordered = T, levels = c("Uncoupled","Coupled"))
 dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("Baseline","De-regulation","Govt-Intervention"))
 
-dfRsftR_all %>% filter(Year==2) %>% 
+png(paste0(dirFigs,"rangeshiftR_individuals_per_scenario.png"), units="cm", width = 12, height = 8, res=1000)
+dfRsftR_all %>% filter(Year==2) %>%
+  filter(!is.na(scenario)) %>% 
   ggplot(aes(timestep,NInds,color=scenario))+
   geom_smooth()+
   #facet_wrap(~scenario)+
   scale_x_continuous(breaks=seq(1,10,1))+
   xlab("Year")+ylab("Total number of individuals in landscape")+
-  theme_bw()+theme(text = element_text(size=20, family = "Roboto"),
-                   axis.text=element_text(size=10, family = "Roboto"),
-                   axis.title=element_text(size=14,face="bold", family = "Roboto"),
+  theme_bw()+theme(text = element_text(size=12, family = "Roboto"),
+                   axis.text=element_text(size=8, family = "Roboto"),
+                   axis.title=element_text(size=10,face="bold", family = "Roboto"),
                    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
                    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
-
+dev.off()
 
 ### raster pops ----------------------------------------------------------------
 
