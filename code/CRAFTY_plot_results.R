@@ -255,7 +255,7 @@ for (i in scenarioList){
 
 dfRS_stlone <- read.csv(paste0(dirOut,"/development/dfRangeshiftR_output_RsftR_standalone.csv"))
 dfRS_stlone$models <- "Uncoupled"
-dfRS_stlone$scenario <- NA
+dfRS_stlone$scenario <- "No management"
 
 dfRS_baseline <- read.csv(paste0(dirOut,"/dfRangeshiftR_output_coupled_Baseline.csv"))
 dfRS_baseline$models <- "Coupled"
@@ -272,7 +272,7 @@ dfRS_govt$scenario <- "Govt-Intervention"
 dfRsftR_all <- rbind(dfRS_stlone,dfRS_baseline,dfRS_dereg,dfRS_govt)
 head(dfRsftR_all)
 dfRsftR_all$models <- factor(dfRsftR_all$models, ordered = T, levels = c("Uncoupled","Coupled"))
-dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("Baseline","De-regulation","Govt-Intervention"))
+dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("No management","Baseline","De-regulation","Govt-Intervention"))
 
 png(paste0(dirFigs,"rangeshiftR_individuals_per_scenario.png"), units="cm", width = 12, height = 8, res=1000)
 dfRsftR_all %>% filter(Year==2) %>%
