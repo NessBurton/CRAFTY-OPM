@@ -19,6 +19,7 @@ agent.pal <- c("no_mgmt" = "grey",
 
 # scenarios
 scenarioList <- c("Baseline","de-regulation","govt-intervention")
+#scenarioList <- "de-regulation"
 
 for (i in scenarioList){
   
@@ -170,7 +171,7 @@ for (i in scenarioList){
   print(ggplot() +
     geom_sf(sfTick5, mapping = aes(fill = Agent), col = NA)+
     scale_fill_manual(values=agent.pal)+
-    theme_minimal())
+    theme_bw())
   dev.off()
   
   
@@ -192,7 +193,7 @@ for (i in scenarioList){
   print(ggplot() +
     geom_sf(sfTick10, mapping = aes(fill = Agent), col = NA)+
     scale_fill_manual(values=agent.pal)+
-    theme_minimal())
+    theme_bw())
   dev.off()
   
   png(paste0(dirFigs,"capitals_",i,".png"), units="cm", width = 18, height = 14, res=1000)
@@ -249,4 +250,30 @@ dfRsftR_all %>% filter(Year==2) %>%
                    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
                    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
+
+### raster pops ----------------------------------------------------------------
+
+library(raster)
+
+rstBaseline <- stack(paste0(dirOut,"/rstRangeshiftR_output_coupled_Baseline.tif"))
+rstDereg <- stack(paste0(dirOut,"/rstRangeshiftR_output_coupled_de-regulation.tif"))
+rstGovt <- stack(paste0(dirOut,"/rstRangeshiftR_output_coupled_govt-intervention.tif"))
+
+names(rstBaseline) <- c("Yr1","Yr2","Yr3","Yr4","Yr5","Yr6","Yr7","Yr8","Yr9","Yr10")
+clrs.viridis <- colorRampPalette(viridis::viridis(10))
+png(paste0(dirFigs,"/rsftr_pops_CRAFTY-coupled_baseline.png"), width = 800, height = 600)
+spplot(rstBaseline, layout = c(5,2), col.regions=clrs.viridis(14), at = seq(0,70,10))
+dev.off()
+
+names(rstDereg) <- c("Yr1","Yr2","Yr3","Yr4","Yr5","Yr6","Yr7","Yr8","Yr9","Yr10")
+clrs.viridis <- colorRampPalette(viridis::viridis(10))
+png(paste0(dirFigs,"/rsftr_pops_CRAFTY-coupled_de-regulation.png"), width = 800, height = 600)
+spplot(rstDereg, layout = c(5,2), col.regions=clrs.viridis(14), at = seq(0,70,10))
+dev.off()
+
+names(rstGovt) <- c("Yr1","Yr2","Yr3","Yr4","Yr5","Yr6","Yr7","Yr8","Yr9","Yr10")
+clrs.viridis <- colorRampPalette(viridis::viridis(10))
+png(paste0(dirFigs,"/rsftr_pops_CRAFTY-coupled_govt-intervention.png"), width = 800, height = 600)
+spplot(rstGovt, layout = c(5,2), col.regions=clrs.viridis(14), at = seq(0,70,10))
+dev.off()
   
