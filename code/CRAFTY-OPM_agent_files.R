@@ -8,7 +8,7 @@ library(tidyverse)
 #wd <- "~/CRAFTY-opm" # sandbox VM
 wd <- "~/eclipse-workspace/CRAFTY_RangeshiftR/data_LondonOPM/"
 
-agentProdFilepath <- paste0(wd,"production/baseline/")
+agentProdFilepath <- paste0(wd,"production/de-regulation/")
 agentBehavFilepath <- paste0(wd,"agents/V4/")
 
 # define Production levels for Services (0-1, low-high)
@@ -55,7 +55,7 @@ Production <- c(1,0.5) # focus is on biodiversity, so provides maximum amount - 
 OPMinverted <- c(0,0) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(0.5,0.5) # lower risk perceptions, skeptical about human health impacts, worried about biodiversity. does lower sensitivity to risk capital achieve this?
 budget <- c(0.5,0.5) # some budget required
-knowledge <- c(0.8,0.8) # management requires knowledge
+knowledge <- c(1,1) # management requires knowledge
 nature <- c(1,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1) # Production of recreation dependent on access capital
 
@@ -85,7 +85,7 @@ Production <- c(0.5,1) # focus is on reducing risk to public health and allowing
 OPMinverted <- c(0,0) # service provision compromised by OPM presence, but less so due to management
 riskPerc <- c(1,1) # this kind of management only possible where risk perceptions...
 budget <- c(1,1) # and budget are high
-knowledge <- c(0.8,0.8) # management requires knowledge
+knowledge <- c(1,1) # management requires knowledge
 nature <- c(1,0) # Production of biodiversity dependent on nature capital
 access <- c(0,1) # Production of recreation dependent on access capital
 
