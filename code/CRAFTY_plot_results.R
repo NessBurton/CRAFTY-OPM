@@ -23,7 +23,7 @@ scenarioList <- c("Baseline","de-regulation","govt-intervention")
 
 for (i in scenarioList){
   
-  i <- scenarioList[3]
+  i <- scenarioList[2]
   
   dfResults <-
     list.files(path = paste0(dirOut,"/V4/",i,"/"),
@@ -269,16 +269,18 @@ dfRS_govt <- read.csv(paste0(dirOut,"/dfRangeshiftR_output_coupled_govt-interven
 dfRS_govt$models <- "Coupled"
 dfRS_govt$scenario <- "Govt-Intervention"
 
-dfRsftR_all <- rbind(dfRS_stlone,dfRS_baseline,dfRS_dereg,dfRS_govt)
+#dfRsftR_all <- rbind(dfRS_stlone,dfRS_baseline,dfRS_dereg,dfRS_govt)
+dfRsftR_all <- rbind(dfRS_baseline,dfRS_dereg,dfRS_govt)
 head(dfRsftR_all)
 dfRsftR_all$models <- factor(dfRsftR_all$models, ordered = T, levels = c("Uncoupled","Coupled"))
-dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("No management","Baseline","De-regulation","Govt-Intervention"))
+#dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("No management","Baseline","De-regulation","Govt-Intervention"))
+dfRsftR_all$scenario <- factor(dfRsftR_all$scenario, ordered = T, levels = c("Baseline","De-regulation","Govt-Intervention"))
 
 png(paste0(dirFigs,"rangeshiftR_individuals_per_scenario.png"), units="cm", width = 12, height = 8, res=1000)
 dfRsftR_all %>% filter(Year==2) %>%
   filter(!is.na(scenario)) %>% 
   ggplot(aes(timestep,NInds,color=scenario))+
-  geom_smooth()+
+  geom_smooth(position=position_jitter(w=0.02, h=0.05))+
   #facet_wrap(~scenario)+
   scale_x_continuous(breaks=seq(1,10,1))+
   xlab("Year")+ylab("Total number of individuals in landscape")+
@@ -354,6 +356,7 @@ ggplot(dfMaster)+
   geom_col(aes(Tick,Service.biodiversity,fill=Agent))+
   facet_wrap(~scenario)
 
+png(paste0(dirFigs,"services_per_scenario.png"), units="cm", width = 16, height = 8, res=1000)
 dfMaster %>% pivot_longer(cols = Service.biodiversity:Service.recreation,
                           names_to = "Benefit", values_to = "Value") %>% 
   group_by(scenario, Benefit, Tick) %>% 
@@ -364,6 +367,7 @@ dfMaster %>% pivot_longer(cols = Service.biodiversity:Service.recreation,
   ylim(c(0,1))+ylab("Service level")+
   scale_x_continuous("Year",n.breaks = 10)+
   theme_bw()
+dev.off()
 
 dfMaster %>% pivot_longer(cols = Capital.OPMinverted:Capital.access,
                           names_to = "Capital", values_to = "Value") %>% 
